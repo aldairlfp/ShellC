@@ -13,3 +13,7 @@ io.c
 links.txt
 .fuse_hidden0000172300000002
 .fuse_hidden0000172900000003
+.fuse_hidden00019c6e00000003
+.fuse_hidden00019c6a00000002
+.idea/
+abstract-syntax-tree.h

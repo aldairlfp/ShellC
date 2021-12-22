@@ -235,17 +235,17 @@ void fileIO(char * args[], char* inputFile, char* outputFile, int option){
 			dup2(fileDescriptor, STDOUT_FILENO); 
 			close(fileDescriptor);
 		// Option 1: input and output redirection
-		}else if (option == 1){
-			// We open file for read only (it's STDIN)
-			fileDescriptor = open(inputFile, O_RDONLY, 0600);  
-			// We replace de standard input with the appropriate file
-			dup2(fileDescriptor, STDIN_FILENO);
-			close(fileDescriptor);
-			// Same as before for the output file
-			fileDescriptor = open(outputFile, O_CREAT | O_TRUNC | O_WRONLY, 0600);
-			dup2(fileDescriptor, STDOUT_FILENO);
-			close(fileDescriptor);		 
-		}
+		}else if (option == 1) {
+            // We open file for read only (it's STDIN)
+            fileDescriptor = open(inputFile, O_RDONLY, 0600);
+            // We replace de standard input with the appropriate file
+            dup2(fileDescriptor, STDIN_FILENO);
+            close(fileDescriptor);
+            // Same as before for the output file
+            fileDescriptor = open(outputFile, O_CREAT | O_TRUNC | O_WRONLY, 0600);
+            dup2(fileDescriptor, STDOUT_FILENO);
+            close(fileDescriptor);
+        }
 		 
 		setenv("parent",getcwd(currentDirectory, 1024),1);
 		
@@ -577,9 +577,24 @@ int main(int argc, char *argv[], char ** envp) {
 		// commandHandler as the argument
 		numTokens = 1;
 		while((tokens[numTokens] = strtok(NULL, " \n\t")) != NULL) numTokens++;
+
+		if(strcmp(tokens[0], "if") == 0)
+			{
+				int endCond = 1;
+				while(strcmp(tokens[endCond], "then") != 0 || strcmp(tokens[endCond], "else" != 0)) {
+					endCond++;
+				}
+				char * commandCond[endCond - 1];
+				for(int i = 0; i < endCond - 1; i ++){
+					commandCond[i] = tokens[i + 1];
+				}
+				if(commandHandler(commandCond))
+					printf("Se ejecuta el then");
+				else 
+					printf("Se ejecuta el else");
+			}
 		
-		commandHandler(tokens);
-		
+		// commandHandler(tokens);
 	}          
 
 	exit(0);
