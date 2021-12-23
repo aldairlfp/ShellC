@@ -600,18 +600,35 @@ int main(int argc, char* argv[], char** envp) {
 
 		if (strcmp(tokens[0], "if") == 0)
 		{
-			int numTokensCond = 0;
-			while (strcmp(tokens[numTokensCond + 1], "then") != 0) {
-				numTokensCond++;
+			int startToken = 1;
+			char* tokensCondition[LIMIT];
+			while (strcmp(tokens[startToken], "then") != 0) {
+				tokensCondition[startToken - 1] = tokens[startToken++];
 			}
-			char* commandCond[LIMIT];
-			for (int i = 0; i < numTokensCond; i++) {
-				commandCond[i] = tokens[i + 1];
-			}
-			commandCond[numTokensCond] = NULL;
-			if (commandHandler(commandCond))
-				strcmp(tokens[numTokensCond + 1], "else") != 0)
+			//creo que aqui es numtokenscond + 1
+			tokensCondition[startToken] = NULL;
+			startToken++;
+
+			//revisa esta talla bro !!! 
+			if (commandHandler(tokensCondition)) {
+				char* tokensThen[LIMIT];
+				int startThen = 0;
+				while (strcmp(tokens[startToken], "else") != 0 &&
+					strcmp(tokens[startToken], "end") != 0)
+				{
+					tokensThen[startThen++] = tokens[startToken];
+					printf("%s\n", tokensThen[startThen - 1]);
+					startToken++;
+				}
+				tokensThen[startThen] = NULL;
+				for (int i = 0; i < 2; i++)
+				{
+					printf("%s\n", tokensThen[i]);
+				}
+
+				commandHandler(tokensThen);
 				printf("Se ejecuta el then\n");
+			}
 			else
 			{
 				printf("Se ejecuta el else\n");
@@ -620,6 +637,5 @@ int main(int argc, char* argv[], char** envp) {
 		else
 			commandHandler(tokens);
 	}
-
 	exit(0);
 }
