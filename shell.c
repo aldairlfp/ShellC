@@ -603,31 +603,40 @@ int main(int argc, char* argv[], char** envp) {
 			int startToken = 1;
 			char* tokensCondition[LIMIT];
 			while (strcmp(tokens[startToken], "then") != 0) {
-				tokensCondition[startToken - 1] = tokens[startToken++];
+				// printf("%s\n", tokens[startToken]);
+				tokensCondition[startToken - 1] = tokens[startToken];
+				printf("%s\n", tokensCondition[startToken - 1]);
+				startToken++;
 			}
-			//creo que aqui es numtokenscond + 1
-			tokensCondition[startToken] = NULL;
+			tokensCondition[startToken - 1] = NULL;
 			startToken++;
 
-			//revisa esta talla bro !!! 
 			if (commandHandler(tokensCondition)) {
 				char* tokensThen[LIMIT];
 				int startThen = 0;
 				while (strcmp(tokens[startToken], "else") != 0 &&
 					strcmp(tokens[startToken], "end") != 0)
 				{
-					tokensThen[startThen++] = tokens[startToken];
-					printf("%s\n", tokensThen[startThen - 1]);
+					tokensThen[startThen] = tokens[startToken];
+					// printf("%s\n", tokens[startToken]);
+					startThen++;
 					startToken++;
 				}
 				tokensThen[startThen] = NULL;
-				for (int i = 0; i < 2; i++)
-				{
-					printf("%s\n", tokensThen[i]);
-				}
+
+				// printf("%d ", startThen);
+				// printf("%s\n", tokensThen[0]);
+				// printf("%d \n", startThen);
+				// printf("%p", NULL);
+				// printf("%s\n", tokensThen[1]);
+
+				// for (int i = 0; i < 2; i++)
+				// {
+				// 	printf("%p\n", tokensThen[i]);
+				// }
 
 				commandHandler(tokensThen);
-				printf("Se ejecuta el then\n");
+				// printf("Se ejecuta el then\n");
 			}
 			else
 			{
