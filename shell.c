@@ -598,50 +598,84 @@ int main(int argc, char* argv[], char** envp) {
 		numTokens = 1;
 		while ((tokens[numTokens] = strtok(NULL, " \n\t")) != NULL) numTokens++;
 
+		// Se manejan las condiciones
 		if (strcmp(tokens[0], "if") == 0)
 		{
-			int startToken = 1;
-			char* tokensCondition[LIMIT];
-			while (tokens[startToken] != NULL && strcmp(tokens[startToken], "then") != 0) {
-				// printf("%d\n", startToken);
-				tokensCondition[startToken - 1] = tokens[startToken];
-				startToken++;
-			}
-			if (tokens[startToken] == NULL) continue;
-			tokensCondition[startToken - 1] = NULL;
-			startToken++;
-
-			if (commandHandler(tokensCondition) == 0) {
-				char* tokensThen[LIMIT];
-				int startThen = 0;
-				while (tokens[startToken] != NULL && strcmp(tokens[startToken], "else") != 0 &&
-					strcmp(tokens[startToken], "end") != 0)
-				{
-					tokensThen[startThen] = tokens[startToken];
-					startThen++;
-					startToken++;
-				}
-				if (tokens[startToken] == NULL) continue;
-				tokensThen[startThen] = NULL;
-
-				commandHandler(tokensThen);
-			}
-			else
+			int startToken = 0;
+			int successCondition = 0;
+			while (tokens[startToken] != NULL && successCondition == 0)
 			{
-				//TODO:te falta esto
-				char* tokensElse[LIMIT];
-				int startElse = 0;
-				while (tokens[startToken] != NULL && strcmp(tokens[startToken], "else") != 0 &&
-					strcmp(tokens[startToken], "end") != 0)
-				{
-					tokensElse[startElse] = tokens[startToken];
-					startElse++;
+				if (strcmp(tokens[startToken], "if") == 0 || strcmp(tokens[startToken], "end") == 0
+					|| strcmp(tokens[startToken], "else") == 0)
+					successCondition = 1;
+				if (strcmp(tokens[startToken], "then") == 0)
+					break;
+			}
+
+			while (tokens[startToken] != NULL && successCondition == 0)
+			{
+				if (strcmp(tokens[startToken], "if") == 0 || strcmp(tokens[startToken], "then") == 0)
+					successCondition = 1;
+				if (strcmp(tokens[startToken], "else") == 0 || strcmp(tokens[startToken], "end") == 0)
+					break;
+			}
+
+			while (tokens[startToken] != NULL && successCondition == 0)
+			{
+				if (strcmp(tokens[startToken], "if") == 0 || strcmp(tokens[startToken], "then") == 0 ||
+					strcmp(tokens[startToken], "else") == 0)
+					successCondition = 1;
+				if (strcmp(tokens[startToken], "end") == 0)
+					break;
+			}
+
+			if (successCondition == 0) {
+
+				startToken = 1;
+				char* tokensCondition[LIMIT];
+				while (tokens[startToken] != NULL && strcmp(tokens[startToken], "then") != 0) {
+					// printf("%d\n", startToken);
+					tokensCondition[startToken - 1] = tokens[startToken];
 					startToken++;
 				}
 				if (tokens[startToken] == NULL) continue;
-				tokensThen[startThen] = NULL;
+				tokensCondition[startToken - 1] = NULL;
+				startToken++;
 
-				commandHandler(tokensThen);
+				if (commandHandler(tokensCondition) == 0) {
+					char* tokensThen[LIMIT];
+					int startThen = 0;
+					while (tokens[startToken] != NULL && strcmp(tokens[startToken], "else") != 0 &&
+						strcmp(tokens[startToken], "end") != 0)
+					{
+						tokensThen[startThen] = tokens[startToken];
+						startThen++;
+						startToken++;
+					}
+					if (tokens[startToken] == NULL) continue;
+					tokensThen[startThen] = NULL;
+
+					commandHandler(tokensThen);
+				}
+				else
+				{
+					while (tokens[startToken] != NULL && strcmp(tokens[startToken], "else") != 0)
+						startToken++;
+					startToken++;
+					printf("Else\n");
+					char* tokensElse[LIMIT];
+					int startElse = 0;
+					while (tokens[startToken] != NULL && strcmp(tokens[startToken], "end") != 0)
+					{
+						tokensElse[startElse] = tokens[startToken];
+						startElse++;
+						startToken++;
+					}
+					if (tokens[startToken] == NULL) continue;
+					tokensElse[startElse] = NULL;
+
+					commandHandler(tokensElse);
+				}
 			}
 		}
 		else
