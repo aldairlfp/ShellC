@@ -553,7 +553,6 @@ int commandHandler(char* args[]) {
 	return 1;
 }
 
-
 /**
 * Main method of our shell
 */
@@ -601,36 +600,63 @@ int main(int argc, char* argv[], char** envp) {
 		// Se manejan las condiciones
 		if (strcmp(tokens[0], "if") == 0)
 		{
-			int startToken = 0;
-			int successCondition = 0;
-			while (tokens[startToken] != NULL && successCondition == 0)
+			int startToken = 1;
+			int rightOrder = 0;
+			int elseExist = 0;
+			int countSyntax = 1;
+			while (tokens[startToken] != NULL && rightOrder == 0)
 			{
 				if (strcmp(tokens[startToken], "if") == 0 || strcmp(tokens[startToken], "end") == 0
 					|| strcmp(tokens[startToken], "else") == 0)
-					successCondition = 1;
-				if (strcmp(tokens[startToken], "then") == 0)
+					rightOrder = 1;
+				if (strcmp(tokens[startToken], "then") == 0) {
+					countSyntax++;
+					startToken++;
 					break;
+				}
+				// printf("startToken %i\n", startToken);
+				startToken++;
 			}
+			// printf("%i\n", rightOrder);
+				printf("Condition1\n");
 
-			while (tokens[startToken] != NULL && successCondition == 0)
+			while (tokens[startToken] != NULL && rightOrder == 0)
 			{
 				if (strcmp(tokens[startToken], "if") == 0 || strcmp(tokens[startToken], "then") == 0)
-					successCondition = 1;
-				if (strcmp(tokens[startToken], "else") == 0 || strcmp(tokens[startToken], "end") == 0)
+					rightOrder = 1;
+				if (strcmp(tokens[startToken], "else") == 0 || strcmp(tokens[startToken], "end") == 0) {
+					if (strcmp(tokens[startToken], "else") == 0)
+						elseExist = 1;
+					countSyntax++;
+					startToken++;
 					break;
+				}
+				startToken++;
 			}
+			// printf("rightOrder %i\n", rightOrder);
+				printf("Condition2\n");
 
-			while (tokens[startToken] != NULL && successCondition == 0)
+			while (tokens[startToken] != NULL && rightOrder == 0)
 			{
 				if (strcmp(tokens[startToken], "if") == 0 || strcmp(tokens[startToken], "then") == 0 ||
 					strcmp(tokens[startToken], "else") == 0)
-					successCondition = 1;
-				if (strcmp(tokens[startToken], "end") == 0)
+					rightOrder = 1;
+				if (strcmp(tokens[startToken], "end") == 0) {
+					countSyntax++;
+					startToken++;
 					break;
+				}
+				startToken++;
 			}
+			// printf("%i\n", rightOrder);
+			// printf("%i\n", rightOrder);
+			// printf("%i\n", elseExist);
+			// printf("%i\n", countSyntax);
+				printf("Condition3\n");
 
-			if (successCondition == 0) {
-
+			if (rightOrder == 0 &&
+				(elseExist == 0 && countSyntax == 3 || elseExist == 1 && countSyntax == 4)) {
+				printf("Condition\n");
 				startToken = 1;
 				char* tokensCondition[LIMIT];
 				while (tokens[startToken] != NULL && strcmp(tokens[startToken], "then") != 0) {
@@ -642,7 +668,11 @@ int main(int argc, char* argv[], char** envp) {
 				tokensCondition[startToken - 1] = NULL;
 				startToken++;
 
-				if (commandHandler(tokensCondition) == 0) {
+				int command = commandHandler(tokensCondition);
+				
+				printf("Condition\n");
+
+				if (command == 0) {
 					char* tokensThen[LIMIT];
 					int startThen = 0;
 					while (tokens[startToken] != NULL && strcmp(tokens[startToken], "else") != 0 &&
@@ -654,6 +684,7 @@ int main(int argc, char* argv[], char** envp) {
 					}
 					if (tokens[startToken] == NULL) continue;
 					tokensThen[startThen] = NULL;
+				printf("then\n");
 
 					commandHandler(tokensThen);
 				}
@@ -662,17 +693,30 @@ int main(int argc, char* argv[], char** envp) {
 					while (tokens[startToken] != NULL && strcmp(tokens[startToken], "else") != 0)
 						startToken++;
 					startToken++;
-					printf("Else\n");
 					char* tokensElse[LIMIT];
 					int startElse = 0;
+					// printf("%i\n", command);
 					while (tokens[startToken] != NULL && strcmp(tokens[startToken], "end") != 0)
 					{
 						tokensElse[startElse] = tokens[startToken];
 						startElse++;
 						startToken++;
 					}
+					// int k = 0;
+					// while (tokensElse[k] != NULL)
+					// {
+					// 	printf("%s\n", tokensElse[k++]);
+					// }
 					if (tokens[startToken] == NULL) continue;
 					tokensElse[startElse] = NULL;
+
+					// k = 0;
+					// while (tokensElse[k] != NULL)
+					// {
+					// 	printf("%s\n", tokensElse[k++]);
+					// }
+
+				printf("else\n");
 
 					commandHandler(tokensElse);
 				}
