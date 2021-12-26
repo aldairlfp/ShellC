@@ -265,7 +265,7 @@ void fileIO(char* args[], char* inputFile, char* outputFile, int option) {
 }
 
 /**
- * Metodo para parsear los angulares 
+ * Metodo para parsear los angulares
  */
 
 char* parseAngular() {
@@ -276,149 +276,93 @@ char* parseAngular() {
 * Method used to manage pipes.
 */
 void pipeHandler(char* args[]) {
-	// File descriptors
-	int filedes[2]; // pos. 0 output, pos. 1 input of the pipe
-	int filedes2[2];
+	//Para continuar revisando desde donde me quede cuando la llamada venga de un pipe
+	int current = 0;
+	//Para saber si algun metodo me devuelve -1
+	int correctOutput = 0;
+	//Para guardar los file descriptors de STDIN y STDOUT cuando haga falta
+	int fd;
+	//Para ir guardando los pedazos de comandos separados por pipes
+	char* newCommandLine[LIMIT];
 
-	int num_cmds = 0;
+	int pipes = 0;
 
-	char* command[256];
+	//Dentro del while me encargo de los caracteres especiales
+	while (args[current] != NULL)
+	{
+		if (strcmp(args[current], "|") == 0) {
+			pipes = 1;
+			//Terminar con NULL el array que contiene el comando que se va a ejecutar antes del caracter especial
+			newCommandLine[current] = NULL;
 
-	pid_t pid;
+			//Crear el pipe (lee de la izquierda y escribe en la derecha)
+			int pipefd[2];
+			pipe(pipefd);
 
-	int err = -1;
-	int end = 0;
+			//Ejecuta el comando que escribe en el pipe
+			int child2Pid = fork();
+			if (child2Pid == 0) {
+				//Remplaza la salida actual por el fd de escritura del pipe
+				dup2(pipefd[1], STDOUT_FILENO);
+				close(pipefd[0]);
+				close(pipefd[1]);
 
-	// Variables used for the different loops
-	int i = 0;
-	int j = 0;
-	int k = 0;
-	int l = 0;
+				//Ejecuta el comando que estaba antes del pipe
+				correctOutput = commandHandler(newCommandLine);
+				exit(correctOutput);
+			}
+			//Espera a que se ejecute el primer comando
+			waitpid(child2Pid, NULL, 0);
 
-	// First we calculate the number of commands (they are separated
-	// by '|')
-	while (args[l] != NULL) {
-		if (strcmp(args[l], "|") == 0) {
-			num_cmds++;
+			//Cierra el fd de escritura(si esto no se hace aqui el comando que lee se queda esperando mas input)
+			close(pipefd[1]);
+
+			break
 		}
-		l++;
+		else {
+			newCommandLine[current] = args[current];
+		}
+
+		current++;
 	}
-	num_cmds++;
 
-	// Main loop of this method. For each command between '|', the
-	// pipes will be configured and standard input and/or output will
-	// be replaced. Then it will be executed
-	while (args[j] != NULL && end != 1) {
-		k = 0;
-		// We use an auxiliary array of pointers to store the command
-		// that will be executed on each iteration
-		while (strcmp(args[j], "|") != 0) {
-			command[k] = args[j];
-			j++;
-			if (args[j] == NULL) {
-				// 'end' variable used to keep the program from entering
-				// again in the loop when no more arguments are found
-				end = 1;
-				k++;
-				break;
-			}
-			k++;
-		}
-		// Last position of the command will be NULL to indicate that
-		// it is its end when we pass it to the exec function
-		command[k] = NULL;
-		j++;
+	current++;
+	int current1 = 0;
+	char* newCommandLine1[LIMIT];
+	while (args[current] != NULL)
+	{
+		newCommandLine1[current1] = args[current];
+		current1++;
+		current++;
+	}
 
-		// Depending on whether we are in an iteration or another, we
-		// will set different descriptors for the pipes inputs and
-		// output. This way, a pipe will be shared between each two
-		// iterations, enabling us to connect the inputs and outputs of
-		// the two different commands.
-		if (i % 2 != 0) {
-			pipe(filedes); // for odd i
-		}
-		else {
-			pipe(filedes2); // for even i
-		}
 
-		pid = fork();
+	//A current le resto startPos por si no empece a revisar desde el principio de args 
+	newCommandLine[current1] = NULL;
 
-		if (pid == -1) {
-			if (i != num_cmds - 1) {
-				if (i % 2 != 0) {
-					close(filedes[1]); // for odd i
-				}
-				else {
-					close(filedes2[1]); // for even i
-				}
-			}
-			printf("Child process could not be created\n");
-			return;
-		}
-		if (pid == 0) {
-			// If we are in the first command
-			if (i == 0) {
-				dup2(filedes2[1], STDOUT_FILENO);
-			}
-			// If we are in the last command, depending on whether it
-			// is placed in an odd or even position, we will replace
-			// the standard input for one pipe or another. The standard
-			// output will be untouched because we want to see the 
-			// output in the terminal
-			else if (i == num_cmds - 1) {
-				if (num_cmds % 2 != 0) { // for odd number of commands
-					dup2(filedes[0], STDIN_FILENO);
-				}
-				else { // for even number of commands
-					dup2(filedes2[0], STDIN_FILENO);
-				}
-				// If we are in a command that is in the middle, we will
-				// have to use two pipes, one for input and another for
-				// output. The position is also important in order to choose
-				// which file descriptor corresponds to each input/output
-			}
-			else { // for odd i
-				if (i % 2 != 0) {
-					dup2(filedes2[0], STDIN_FILENO);
-					dup2(filedes[1], STDOUT_FILENO);
-				}
-				else { // for even i
-					dup2(filedes[0], STDIN_FILENO);
-					dup2(filedes2[1], STDOUT_FILENO);
-				}
-			}
+	if (pipes == 1) {
+		//Ejecuta el comando que escribe en el pipe
+		int childPid = fork();
+		if (childPid == 0) {
+			//Remplaza la salida actual por el fd de escritura del pipe
+			dup2(pipefd[0], STDIN_FILENO);
+			close(pipefd[0]);
+			close(pipefd[1]);
 
-			if (execvp(command[0], command) == err) {
-				kill(getpid(), SIGTERM);
-			}
+			//Ejecuta el comando que estaba antes del pipe
+			correctOutput = commandHandler(newCommandLine);
+			exit(correctOutput);
 		}
+		//Espera a que se ejecute el primer comando
+		waitpid(childPid, NULL, 0);
 
-		// CLOSING DESCRIPTORS ON PARENT
-		if (i == 0) {
-			close(filedes2[1]);
-		}
-		else if (i == num_cmds - 1) {
-			if (num_cmds % 2 != 0) {
-				close(filedes[0]);
-			}
-			else {
-				close(filedes2[0]);
-			}
-		}
-		else {
-			if (i % 2 != 0) {
-				close(filedes2[0]);
-				close(filedes[1]);
-			}
-			else {
-				close(filedes[0]);
-				close(filedes2[1]);
-			}
-		}
-
-		waitpid(pid, NULL, 0);
-
-		i++;
+		//Cierra el fd de escritura(si esto no se hace aqui el comando que lee se queda esperando mas input)
+		close(pipefd[0]);
+	}
+	else
+	{
+		//Llegados a este punto el comando actual no tiene caracteres especiales asi que lo ejecuto
+		return commandHandler(newCommandLine);
 	}
 }
 
@@ -511,13 +455,6 @@ int commandHandler(char* args[]) {
 				// the appropriate method that will handle the different
 				// executions
 			}
-			else if (strcmp(args[i], "|") == 0) {
-				pipeHandler(args);
-				return 1;
-				// If '<' is detected, we have Input and Output redirection.
-				// First we check if the structure given is the correct one,
-				// and if that is the case we call the appropriate method
-			}
 			else if (strcmp(args[i], "<") == 0) {
 				aux = i + 1;
 				// int k = 0;
@@ -525,7 +462,7 @@ int commandHandler(char* args[]) {
 				// {
 				// 	printf("%s",args[k++]);
 				// }
-				
+
 				// printf("%s\n", args[aux]);
 				// printf("%s\n", args[aux + 1]);
 				// printf("%s\n", args[aux + 2]);
@@ -702,7 +639,7 @@ int main(int argc, char* argv[], char** envp) {
 				if (tokensCondition[0] == NULL) continue;
 				startToken++;
 
-				int command = commandHandler(tokensCondition);
+				int command = pipeHandler(tokensCondition);
 
 				// printf("%i\n", command);
 
@@ -727,7 +664,7 @@ int main(int argc, char* argv[], char** envp) {
 					// }
 
 
-					commandHandler(tokensThen);
+					pipeHandler(tokensThen);
 				}
 				else
 				{
@@ -766,12 +703,12 @@ int main(int argc, char* argv[], char** envp) {
 
 					// printf("else\n");
 
-					commandHandler(tokensElse);
+					pipeHandler(tokensElse);
 				}
 			}
 		}
 		else
-			commandHandler(tokens);
+			pipeHandler(tokens);
 	}
 	exit(0);
 }
