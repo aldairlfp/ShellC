@@ -265,6 +265,14 @@ void fileIO(char* args[], char* inputFile, char* outputFile, int option) {
 }
 
 /**
+ * Metodo para parsear los angulares 
+ */
+
+char* parseAngular() {
+
+}
+
+/**
 * Method used to manage pipes.
 */
 void pipeHandler(char* args[]) {
@@ -432,7 +440,8 @@ int commandHandler(char* args[]) {
 	// We look for the special characters and separate the command itself
 	// in a new array for the arguments
 	while (args[j] != NULL) {
-		if ((strcmp(args[j], ">") == 0) || (strcmp(args[j], "<") == 0) || (strcmp(args[j], "&") == 0)) {
+		if ((strcmp(args[j], ">") == 0) || (strcmp(args[j], "<") == 0) || (strcmp(args[j], "&") == 0) ||
+			(strcmp(args[j], ">>") == 0)) {
 			break;
 		}
 		args_aux[j] = args[j];
@@ -460,8 +469,10 @@ int commandHandler(char* args[]) {
 			printf("%s\n", getcwd(currentDirectory, 1024));
 		}
 	}
-	// 'clear' command clears the screen
-	else if (strcmp(args[0], "clear") == 0) system("clear");
+	// 'true' command clears the screen
+	else if (strcmp(args[0], "true") == 0) return 0;
+	// 'false' comando
+	else if (strcmp(args[0], "false") == 0) return 1;
 	// 'cd' command to change directory
 	else if (strcmp(args[0], "cd") == 0) changeDirectory(args);
 	// 'environ' command to list the environment variables
@@ -509,17 +520,28 @@ int commandHandler(char* args[]) {
 			}
 			else if (strcmp(args[i], "<") == 0) {
 				aux = i + 1;
-				if (args[aux] == NULL || args[aux + 1] == NULL || args[aux + 2] == NULL) {
+				// int k = 0;
+				// while (args[k] != NULL)
+				// {
+				// 	printf("%s",args[k++]);
+				// }
+				
+				// printf("%s\n", args[aux]);
+				// printf("%s\n", args[aux + 1]);
+				// printf("%s\n", args[aux + 2]);
+				if (args[aux] == NULL
+					// || args[aux + 1] == NULL || args[aux + 2] == NULL
+					) {
 					printf("Not enough input arguments\n");
 					return -1;
 				}
-				else {
-					if (strcmp(args[aux + 1], ">") != 0) {
-						printf("Usage: Expected '>' and found %s\n", args[aux + 1]);
-						return -2;
-					}
-				}
-				fileIO(args_aux, args[i + 1], args[i + 3], 1);
+				// else {
+				// 	if (strcmp(args[aux + 1], ">") != 0) {
+				// 		printf("Usage: Expected '>' and found %s\n", args[aux + 1]);
+				// 		return -2;
+				// 	}
+				// }
+				fileIO(args_aux, args[i - 1], args[i + 1], 1);
 				return 1;
 			}
 			// If '>' is detected, we have output redirection.
@@ -558,7 +580,7 @@ int commandHandler(char* args[]) {
 */
 int main(int argc, char* argv[], char** envp) {
 	char line[MAXLINE]; // buffer for the user input
-	char* tokens[LIMIT]; // array for the different tokens in the command
+	char* prevTokens[LIMIT]; // array for the different tokens in the command
 	int numTokens;
 
 	no_reprint_prmpt = 0; 	// to prevent the printing of the shell
@@ -590,12 +612,22 @@ int main(int argc, char* argv[], char** envp) {
 		fgets(line, MAXLINE, stdin);
 
 		// If nothing is written, the loop is executed again
-		if ((tokens[0] = strtok(line, " \n\t")) == NULL) continue;
+		if ((prevTokens[0] = strtok(line, " \n\t")) == NULL) continue;
 
 		// We read all the tokens of the input and pass it to our
 		// commandHandler as the argument
 		numTokens = 1;
-		while ((tokens[numTokens] = strtok(NULL, " \n\t")) != NULL) numTokens++;
+		while ((prevTokens[numTokens] = strtok(NULL, " \n\t")) != NULL) numTokens++;
+
+		char* tokens[MAXLINE];
+		int lastToken = 0;
+		for (int i = 0; i < numTokens && strcmp(prevTokens[i], "#") != 0; i++)
+		{
+			tokens[i] = prevTokens[i];
+			lastToken++;
+			// printf("%s\n", tokens[i]);
+		}
+		tokens[lastToken] = NULL;
 
 		// Se manejan las condiciones
 		if (strcmp(tokens[0], "if") == 0)
@@ -618,7 +650,7 @@ int main(int argc, char* argv[], char** envp) {
 				startToken++;
 			}
 			// printf("%i\n", rightOrder);
-				printf("Condition1\n");
+			// printf("Condition1\n");
 
 			while (tokens[startToken] != NULL && rightOrder == 0)
 			{
@@ -634,7 +666,7 @@ int main(int argc, char* argv[], char** envp) {
 				startToken++;
 			}
 			// printf("rightOrder %i\n", rightOrder);
-				printf("Condition2\n");
+			// printf("Condition2\n");
 
 			while (tokens[startToken] != NULL && rightOrder == 0)
 			{
@@ -652,25 +684,27 @@ int main(int argc, char* argv[], char** envp) {
 			// printf("%i\n", rightOrder);
 			// printf("%i\n", elseExist);
 			// printf("%i\n", countSyntax);
-				printf("Condition3\n");
+			// printf("Condition3\n");
 
 			if (rightOrder == 0 &&
 				(elseExist == 0 && countSyntax == 3 || elseExist == 1 && countSyntax == 4)) {
-				printf("Condition\n");
 				startToken = 1;
 				char* tokensCondition[LIMIT];
 				while (tokens[startToken] != NULL && strcmp(tokens[startToken], "then") != 0) {
 					// printf("%d\n", startToken);
 					tokensCondition[startToken - 1] = tokens[startToken];
 					startToken++;
+
 				}
 				if (tokens[startToken] == NULL) continue;
+				// printf("Condition\n");
 				tokensCondition[startToken - 1] = NULL;
+				if (tokensCondition[0] == NULL) continue;
 				startToken++;
 
 				int command = commandHandler(tokensCondition);
-				
-				printf("Condition\n");
+
+				// printf("%i\n", command);
 
 				if (command == 0) {
 					char* tokensThen[LIMIT];
@@ -684,7 +718,14 @@ int main(int argc, char* argv[], char** envp) {
 					}
 					if (tokens[startToken] == NULL) continue;
 					tokensThen[startThen] = NULL;
-				printf("then\n");
+					if (tokensThen[0] == NULL) continue;
+					// printf("then\n");
+					// int i = 0;
+					// while (tokensThen[i] != NULL)
+					// {
+					// 	printf("%s", tokensThen[i]);
+					// }
+
 
 					commandHandler(tokensThen);
 				}
@@ -709,6 +750,13 @@ int main(int argc, char* argv[], char** envp) {
 					// }
 					if (tokens[startToken] == NULL) continue;
 					tokensElse[startElse] = NULL;
+					if (tokensElse[0] == NULL) continue;
+
+					// int i = 0;
+					// while (tokensElse[i] != NULL)
+					// {
+					// 	printf("%s", tokensElse[i]);
+					// }
 
 					// k = 0;
 					// while (tokensElse[k] != NULL)
@@ -716,7 +764,7 @@ int main(int argc, char* argv[], char** envp) {
 					// 	printf("%s\n", tokensElse[k++]);
 					// }
 
-				printf("else\n");
+					// printf("else\n");
 
 					commandHandler(tokensElse);
 				}
