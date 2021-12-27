@@ -69,15 +69,13 @@ void Help(char* args[]) {
 		printf("ctrl + c: Capture and send signals to processes (0.5 points) \n");
 		printf("if: Conditional expressions (1 points) \n");
 		printf("help: Print a help (1 points) \n");
-		printf("variables: Variables and backquotes (1 points) \n \n");
 
 		printf("Comandos built-in: \n");
 		printf("cd: Change directories \n");
 		printf("exit: Finish shell \n ");
 		printf("help: Show this help \n ");
 		printf("if: Perform a conditional operation on a single line \n");
-		printf("set/get/unset: Create variables, print their values, delete variables \n \n");
-		printf("Total: 8 points");
+		printf("Total: 7 points");
 	}
 	else {
 		if (args[1] == "prompt") printf("Our prompt shows us a list of characters, which make up a list of commands indicating that it is waiting for an order. In our case, where our first line shows the following: <user> @ <host> <cwd>> and then, before each command list we print: my-prompt, letting the user know that our shell. We had no difficulty in performing this functionality or exploiting test cases");
@@ -227,64 +225,6 @@ int changeDirectory(char* args[]) {
 }
 
 /**
- * Method used to manage the environment variables with different
- * options
- */
-int manageEnviron(char* args[], int option) {
-	char** env_aux;
-	switch (option) {
-		// Case 'environ': we print the environment variables along with
-		// their values
-	case 0:
-		for (env_aux = environ; *env_aux != 0; env_aux++) {
-			printf("%s\n", *env_aux);
-		}
-		break;
-		// Case 'setenv': we set an environment variable to a value
-	case 1:
-		if ((args[1] == NULL) && args[2] == NULL) {
-			printf("%s", "Not enought input arguments\n");
-			return -1;
-		}
-
-		// We use different output for new and overwritten variables
-		if (getenv(args[1]) != NULL) {
-			printf("%s", "The variable has been overwritten\n");
-		}
-		else {
-			printf("%s", "The variable has been created\n");
-		}
-
-		// If we specify no value for the variable, we set it to ""
-		if (args[2] == NULL) {
-			setenv(args[1], "", 1);
-			// We set the variable to the given value
-		}
-		else {
-			setenv(args[1], args[2], 1);
-		}
-		break;
-		// Case 'unsetenv': we delete an environment variable
-	case 2:
-		if (args[1] == NULL) {
-			printf("%s", "Not enought input arguments\n");
-			return -1;
-		}
-		if (getenv(args[1]) != NULL) {
-			unsetenv(args[1]);
-			printf("%s", "The variable has been erased\n");
-		}
-		else {
-			printf("%s", "The variable does not exist\n");
-		}
-		break;
-
-
-	}
-	return 0;
-}
-
-/**
 * Method for launching a program. It can be run in the background
 * or in the foreground
 */
@@ -301,8 +241,6 @@ void launchProg(char** args, int background) {
 		// process to handle them with signalHandler_int)	
 		signal(SIGINT, SIG_IGN);
 
-		// We set parent=<pathname>/simple-c-shell as an environment variable
-		// for the child
 		setenv("parent", getcwd(currentDirectory, 1024), 1);
 
 		// If we launch non-existing commands we end the process
@@ -341,45 +279,31 @@ void fileIO(char* args[], char* inputFile, char* outputFile, int option) {
 		return;
 	}
 	if (pid == 0) {
-		// printf("option %i\n", option);
-		// Option 0: output redirection
+		// outputFile not empty: output redirection
 		if (strcmp(outputFile, "") != 0) {
-			// printf("entre\n");
-			// printf("output %s\n", outputFile);
-			// printf("option %i\n", option);
+			// option 0: truncate operation
 			if (option == 0) {
 				// We open (create) the file truncating it at 0, for write only
 				fileDescriptor = open(outputFile, O_CREAT | O_TRUNC | O_WRONLY, 0600);
 			}
+			// option 1: append operation
 			if (option == 1) {
 				// We open (create) the file truncating it at 0, for write only
 				fileDescriptor = open(outputFile, O_CREAT | O_APPEND | O_WRONLY, 0600);
 			}
-			// printf("fd %i\n", fileDescriptor);
 			// We replace de standard output with the appropriate file
 			dup2(fileDescriptor, STDOUT_FILENO);
 			close(fileDescriptor);
-			// Option 1: input and output redirection
 		}
+		// inputFile not empty: input redirection
 		if (strcmp(inputFile, "") != 0) {
-			// printf("entre2\n");
-			// printf("input %sa\n", inputFile);
-			// printf("comman %s, %s, %s\n", args[0], args[1], args[2]);
-			// inputFile = strcat(inputFile, "test");
-			// printf("%s\n", inputFile);
 			// We open file for read only (it's STDIN)
 			fileDescriptor = open(inputFile, O_RDONLY, 0600);
-			// printf("%i\n", fileDescriptor);
 			// We replace de standard input with the appropriate file
 			dup2(fileDescriptor, STDIN_FILENO);
 			close(fileDescriptor);
-			// // Same as before for the output file
-			// fileDescriptor = open(outputFile, O_CREAT | O_TRUNC | O_WRONLY, 0600);
-			// dup2(fileDescriptor, STDOUT_FILENO);
-			// close(fileDescriptor);		 
 		}
 
-		// printf("%s, %s\n", args[0], args[1]);
 		setenv("parent", getcwd(currentDirectory, 1024), 1);
 
 		if (execvp(args[0], args) == err) {
@@ -390,10 +314,13 @@ void fileIO(char* args[], char* inputFile, char* outputFile, int option) {
 	waitpid(pid, NULL, 0);
 }
 
+/**
+ * Method to get the redirection input and output
+*/
 void getRedirection(char* commandList[], char** directionI, char** directionO, int index, int* option) {
 	char* newInput = (char*)malloc(sizeof(char));
 	char* newOutput = (char*)malloc(sizeof(char));
-	int currentI = 0;
+	int currentI = 0; // to know if is output or input
 	int pos = index;
 	while (commandList[pos] != NULL) {
 		if (strcmp(commandList[pos], ">") == 0) {
@@ -432,16 +359,12 @@ void getRedirection(char* commandList[], char** directionI, char** directionO, i
 		}
 		pos++;
 	}
-	// if (directionI != NULL)
-	// 	printf("input %s\n", newInput);
-	// if (directionO != NULL)
-	// 	printf("output %s\n", newOutput);
 	*directionI = newInput;
 	*directionO = newOutput;
 }
 
 /**
-* Method used to handle the commands entered via the standard input
+* Method used to handle the commands entered via the standard input after being splited by pipeHandler
 */
 int commandHandler(char* args[]) {
 	int i = 0;
@@ -465,14 +388,6 @@ int commandHandler(char* args[]) {
 		args_aux[j] = args[j];
 		j++;
 	}
-
-	// int k = 0;
-	// while (args_aux[k] != NULL)
-	// {
-	// 	printf("%s\n", args_aux[k]);
-	// 	k++;
-	// }
-
 	// 'exit' command quits the shell
 	if (strcmp(args[0], "exit") == 0) exit(0);
 	// 'pwd' command prints the current directory
@@ -505,29 +420,6 @@ int commandHandler(char* args[]) {
 	// }
 	// 'cd' command to change directory
 	else if (strcmp(args[0], "cd") == 0) changeDirectory(args);
-	// 'environ' command to list the environment variables
-	else if (strcmp(args[0], "environ") == 0) {
-		if (args[j] != NULL) {
-			// If we want file output
-			if ((strcmp(args[j], ">") == 0) && (args[j + 1] != NULL)) {
-				fileDescriptor = open(args[j + 1], O_CREAT | O_TRUNC | O_WRONLY, 0600);
-				// We replace de standard output with the appropriate file
-				standardOut = dup(STDOUT_FILENO); 	// first we make a copy of stdout
-													// because we'll want it back
-				dup2(fileDescriptor, STDOUT_FILENO);
-				close(fileDescriptor);
-				manageEnviron(args, 0);
-				dup2(standardOut, STDOUT_FILENO);
-			}
-		}
-		else {
-			manageEnviron(args, 0);
-		}
-	}
-	// 'setenv' command to set environment variables
-	else if (strcmp(args[0], "setenv") == 0) manageEnviron(args, 1);
-	// 'unsetenv' command to undefine environment variables
-	else if (strcmp(args[0], "unsetenv") == 0) manageEnviron(args, 2);
 	else {
 		// If none of the preceding commands were used, we invoke the
 		// specified program. We have to detect if I/O redirection,
@@ -547,53 +439,6 @@ int commandHandler(char* args[]) {
 				char* directionI;
 				int option;
 				getRedirection(args, &directionI, &directionO, i, &option);
-				// if (directionI != NULL)
-				// 	printf("input %s\n", directionI);
-				// if (directionO != NULL)
-				// 	printf("output %s\n", directionO);
-
-				// while (args[k] != NULL)
-				// {
-				// 	// printf("%s\n", args[k]);
-				// 	if (strcmp(args[k], "|") != 0) {
-				// 		if (strcmp(args[k], "<") == 0) {
-				// 			directionI = getDirection(args, &k);
-				// 			option = 2;
-				// 		}
-				// 		if (strcmp(args[k], ">") == 0) {
-				// 			directionO = getDirection(args, &k);
-				// 			option = 0;
-				// 		}
-				// 		if (strcmp(args[k], ">>") == 0) {
-				// 			directionO = getDirection(args, &k);
-				// 			option = 1;
-				// 		}
-				// 	}
-				// 	k++;
-				// }
-				// printf("%i\n", k);
-				// args_aux[k] = NULL;
-				// char* inputFile;
-				// char* outputFile;
-				// if (strcmp(args[i], "<") == 0) {
-				// 	inputFile = directionI;
-				// 	outputFile = NULL;
-				// }
-				// if (strcmp(args[i], ">") == 0) {
-				// 	inputFile = NULL;
-				// 	outputFile = directionO;
-				// }
-				// if (strcmp(args[i], ">>") == 0) {
-				// 	inputFile = NULL;
-				// 	outputFile = directionO;
-				// }
-				//printf("%s\n",directionO);
-				// if (directionI != NULL)
-				// 	printf("%s input 0\n", directionI);
-				// if (directionO != NULL)
-				// 	printf("%s output 0\n", directionO);
-				// printf("hi\n");
-				// printf("args aux %s, %s\n", args_aux[0], args_aux[1]);
 				args_aux[i] = NULL;
 				fileIO(args_aux, directionI, directionO, option);
 				directionI = NULL;
@@ -607,31 +452,13 @@ int commandHandler(char* args[]) {
 		// We launch the program with our method, indicating if we
 		// want background execution or not
 		args_aux[i] = NULL;
-		// printf("%i i\n", i);
-		// int k = 0;
-		// while (args_aux[k] != NULL)
-		// {
-		// 	printf("%s\n", args[k]);
-		// 	k++;
-		// }
-
 		launchProg(args_aux, background);
-
-		/**
-		 * For the part 1.e, we only had to print the input that was not
-		 * 'exit', 'pwd' or 'clear'. We did it the following way
-		 */
-		 //	i = 0;
-		 //	while(args[i]!=NULL){
-		 //		printf("%s\n", args[i]);
-		 //		i++;
-		 //	}
 	}
 	return 1;
 }
 
 /**
-* Method used to manage pipes.
+* Method used to manage pipes and split the commands.
 */
 int pipeHandler(char* args[]) {
 	//TODO: Poner esto mas bonito
@@ -681,8 +508,6 @@ int pipeHandler(char* args[]) {
 		else {
 			newCommandLine[current] = args[current];
 		}
-
-		// printf("pipe %s\n", args[current]);
 		current++;
 	}
 	if (pipes == 1) {
@@ -697,15 +522,8 @@ int pipeHandler(char* args[]) {
 			current++;
 		}
 
-
 		//A current le resto startPos por si no empece a revisar desde el principio de args 
 		newCommandLine[current1] = NULL;
-
-		// int k = 0;
-		// while (args[k] != NULL)
-		// {
-		// 	printf("%s\n", newCommandLine1[k++]);
-		// }
 
 		//Ejecuta el comando que escribe en el pipe
 		int childPid = fork();
@@ -728,12 +546,6 @@ int pipeHandler(char* args[]) {
 	else
 	{
 		newCommandLine[current] = NULL;
-		// current = 0;
-		// while (newCommandLine[current] != NULL)
-		// {
-		// 	printf("newcomman %s\n", newCommandLine[current]);
-		// 	current++;
-		// }
 		//Llegados a este punto el comando actual no tiene caracteres especiales asi que lo ejecuto
 		return commandHandler(newCommandLine);
 	}
@@ -760,8 +572,6 @@ int main(int argc, char* argv[], char** envp) {
 	// we can treat it later in other methods
 	environ = envp;
 
-	// We set shell=<pathname>/simple-c-shell as an environment variable for
-	// the child
 	setenv("shell", getcwd(currentDirectory, 1024), 1);
 
 	// Main loop, where the user input will be read and the prompt
@@ -787,23 +597,26 @@ int main(int argc, char* argv[], char** envp) {
 		while ((prevTokens[numTokens] = strtok(NULL, " \n")) != NULL) numTokens++;
 		// printf("%i tokens\n", numTokens);
 		char* tokens[MAXLINE];
+
+		// Verificar si existe # para ignorar el resto del comando
 		int lastToken = 0;
 		for (int i = 0; i < numTokens && strcmp(prevTokens[i], "#") != 0; i++)
 		{
 			tokens[i] = prevTokens[i];
 			lastToken++;
-			// printf("%s\n", tokens[i]);
 		}
-		// printf("%i lasttokens\n", lastToken);
 		tokens[lastToken] = NULL;
 
 		// Se manejan las condiciones
 		if (strcmp(tokens[0], "if") == 0)
 		{
+			// Se verifica que aparezcan solo un if, then, un posible else y end
+			// y en orden correcto
 			int startToken = 1;
-			int rightOrder = 0;
+			int rightOrder = 0; 
 			int elseExist = 0;
 			int countSyntax = 1;
+			// comando entre el if y el then
 			while (tokens[startToken] != NULL && rightOrder == 0)
 			{
 				if (strcmp(tokens[startToken], "if") == 0 || strcmp(tokens[startToken], "end") == 0
@@ -814,12 +627,10 @@ int main(int argc, char* argv[], char** envp) {
 					startToken++;
 					break;
 				}
-				// printf("startToken %i\n", startToken);
 				startToken++;
 			}
-			// printf("%i\n", rightOrder);
-			// printf("Condition1\n");
 
+			// comando entre el then y un posible else o end
 			while (tokens[startToken] != NULL && rightOrder == 0)
 			{
 				if (strcmp(tokens[startToken], "if") == 0 || strcmp(tokens[startToken], "then") == 0)
@@ -833,9 +644,8 @@ int main(int argc, char* argv[], char** envp) {
 				}
 				startToken++;
 			}
-			// printf("rightOrder %i\n", rightOrder);
-			// printf("Condition2\n");
 
+			// comando entre un then o un posible end y un end
 			while (tokens[startToken] != NULL && rightOrder == 0)
 			{
 				if (strcmp(tokens[startToken], "if") == 0 || strcmp(tokens[startToken], "then") == 0 ||
@@ -848,32 +658,28 @@ int main(int argc, char* argv[], char** envp) {
 				}
 				startToken++;
 			}
-			// printf("%i\n", rightOrder);
-			// printf("%i\n", rightOrder);
-			// printf("%i\n", elseExist);
-			// printf("%i\n", countSyntax);
-			// printf("Condition3\n");
 
+			// Si cumple todas las condiciones entonces se ejecutan los comandos
+			// sino entonces no es un comando if
 			if (rightOrder == 0 &&
 				(elseExist == 0 && countSyntax == 3 || elseExist == 1 && countSyntax == 4)) {
+				// Primero el comando dentro del if
 				startToken = 1;
 				char* tokensCondition[LIMIT];
 				while (tokens[startToken] != NULL && strcmp(tokens[startToken], "then") != 0) {
-					// printf("%d\n", startToken);
 					tokensCondition[startToken - 1] = tokens[startToken];
 					startToken++;
-
 				}
+				// Si dentro del if el comando esta vacio, ignora la linea
 				if (tokens[startToken] == NULL) continue;
-				// printf("Condition\n");
 				tokensCondition[startToken - 1] = NULL;
 				if (tokensCondition[0] == NULL) continue;
 				startToken++;
 
 				int command = pipeHandler(tokensCondition);
 
-				// printf("%i\n", command);
-
+				// Si se cumple entra al then y vuelve a realizar lo mismo
+				// sino entra al else y repite lo mismo
 				if (command == 0) {
 					char* tokensThen[LIMIT];
 					int startThen = 0;
@@ -887,14 +693,7 @@ int main(int argc, char* argv[], char** envp) {
 					if (tokens[startToken] == NULL) continue;
 					tokensThen[startThen] = NULL;
 					if (tokensThen[0] == NULL) continue;
-					// printf("then\n");
-					// int i = 0;
-					// while (tokensThen[i] != NULL)
-					// {
-					// 	printf("%s", tokensThen[i]);
-					// }
-
-
+					
 					pipeHandler(tokensThen);
 				}
 				else
@@ -911,40 +710,15 @@ int main(int argc, char* argv[], char** envp) {
 						startElse++;
 						startToken++;
 					}
-					// int k = 0;
-					// while (tokensElse[k] != NULL)
-					// {
-					// 	printf("%s\n", tokensElse[k++]);
-					// }
 					if (tokens[startToken] == NULL) continue;
 					tokensElse[startElse] = NULL;
 					if (tokensElse[0] == NULL) continue;
-
-					// int i = 0;
-					// while (tokensElse[i] != NULL)
-					// {
-					// 	printf("%s", tokensElse[i]);
-					// }
-
-					// k = 0;
-					// while (tokensElse[k] != NULL)
-					// {
-					// 	printf("%s\n", tokensElse[k++]);
-					// }
-
-					// printf("else\n");
 
 					pipeHandler(tokensElse);
 				}
 			}
 		}
 		else {
-			// int k = 0;
-			// while (tokens[k] != NULL)
-			// {
-			// 	printf("token %s\n", tokens[k]);
-			// 	k++;
-			// }
 			pipeHandler(tokens);
 		}
 	}
