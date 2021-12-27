@@ -58,6 +58,114 @@ void init() {
 	}
 }
 
+void Help(char * args[]){
+	if(args[1] == NULL){
+		printf("Members: Aldair Alfonso Perez y Ramon Cruz Alfonso \n \n");
+		printf("Functionalities: \n ");
+		printf("basic: Basic functionalities (3 points) \n"); 
+		printf("background: Operator & and have processes in the background (0.5 points) \n"); 
+		printf("spaces: Spaces between commands and parameters (0.5 points) \n"); 
+		printf("history: Command history (0.5 points) \n"); 
+		printf("ctrl + c: Capture and send signals to processes (0.5 points) \n");
+		printf("if: Conditional expressions (1 points) \n"); 
+		printf("help: Print a help (1 points) \n"); 
+		printf("variables: Variables and backquotes (1 points) \n \n"); 
+		
+		printf("Comandos built-in: \n");
+		printf("cd: Change directories \n");
+		printf("exit: Finish shell \n ");
+		printf("help: Show this help \n ");
+		printf("if: Perform a conditional operation on a single line \n");
+		printf("set/get/unset: Create variables, print their values, delete variables \n \n");
+		printf("Total: 8 points");
+	}
+	else {
+		if(args[1] == "prompt") printf("Our prompt shows us a list of characters, which make up a list of commands indicating that it is waiting for an order. In our case, where our first line shows the following: <user> @ <host> <cwd>> and then, before each command list we print: my-prompt, letting the user know that our shell. We had no difficulty in performing this functionality or exploiting test cases");
+		else if (args[1] == "cd") printf("This command allows you to change the current address, it is very easy, since the chdir function does all the work. In the event that the address that is passed as a parameter is null, it sets x default home, and in case it is not valid, it will print that that address is not found. or we had no difficulty in performing this functionality or cases of tests that exploit");
+		else if (args[1] == "<") printf("We implement this command to redirect the standard input/output of commands to/from files with >/</>>, for this we use \"open\" and \"close\". The open function returns an integer that identifies a descriptor and It has as parameters a pointer to the path of the file that we want to open and some flags that indicate how to open it: read only, write only, read / write or others. The \"close\" function closes the file descriptor that we pass as a parameter. Returns 0 on success and -1 on failure. Then we use the \"setenv\" function to define a new environment variable or change the existing one. Three arguments are required, the first and second of which are char pointers pointing to the variable name and its value, respectively. The third argument is of type int and specifies whether the value of the given variable should be overwritten if it already exists in the environment. The non-zero value of this argument denotes the overwrite behavior and the zero value the opposite.");
+		else if (args[1] == "pipe") printf("A pipeline consists of a chain of processes connected in such a way that the output of each element in the chain is the input of the next. They allow communication and synchronization between processes. The use of data buffer between consecutive elements is common. To implement these we use");
+		else if (args[1] == "history") printf("Our history consists of saving in a txt, which we save in the local folder where the project is located, all the commands that are executed listed and separated by line changes. To do this command, we use the functions fopen, fread and fwrite, With fopen we open the file, and if it does not exist it creates it, where the first parameter is the name of the file and the second is the mode, in this case we use \"a\" since it allows adding texti at the end of the file without replacing the previous text, and then with fwrite and fread to write and read the file respectively.");
+		else if (args[1] == "ctrl + c") printf("The ctrl + c functionality consists in that when this combination of keys is touched, the current process is not destroyed, but it is executed again if the prompt is killed. To do this we create the methods \"signalHandler_child\" and \"signalHandler_int\"; \, in which if when killing the process it returns 0, we change the variable that controls whether we should make a prompt or not.");  
+		else if (args[1] == "help") printf("This functionality shows us how to use the commands, and in case of only using the help without another command, it shows the functionalities implemented");
+	}		
+		// switch (args[1]) {
+		// case "prompt" :
+		// 	printf("Our prompt shows us a list of characters, which make up a list of commands indicating that it is waiting for an order. In our case, where our first line shows the following: <user> @ <host> <cwd>> and then, before each command list we print: my-prompt, letting the user know that our shell. We had no difficulty in performing this functionality or exploiting test cases");
+		// 	break;
+		// case "cd" :
+		// 	printf("This command allows you to change the current address, it is very easy, since the chdir function does all the work. In the event that the address that is passed as a parameter is null, it sets x default home, and in case it is not valid, it will print that that address is not found. or we had no difficulty in performing this functionality or cases of tests that exploit");
+		// 	break;
+		// case "Redireccion de entrada y salida estandar" :
+		// 	printf("We implement this command to redirect the standard input/output of commands to/from files with >/</>>, for this we use \"open\" and \"close\". The open function returns an integer that identifies a descriptor and It has as parameters a pointer to the path of the file that we want to open and some flags that indicate how to open it: read only, write only, read / write or others. The \"close\" function closes the file descriptor that we pass as a parameter. Returns 0 on success and -1 on failure. Then we use the \"setenv\" function to define a new environment variable or change the existing one. Three arguments are required, the first and second of which are char pointers pointing to the variable name and its value, respectively. The third argument is of type int and specifies whether the value of the given variable should be overwritten if it already exists in the environment. The non-zero value of this argument denotes the overwrite behavior and the zero value the opposite.");
+		// 	break;
+		// case "Pipe" : 
+		// 	printf("A pipeline consists of a chain of processes connected in such a way that the output of each element in the chain is the input of the next. They allow communication and synchronization between processes. The use of data buffer between consecutive elements is common. To implement these we use");
+		// 	break;
+		// case "history" : 
+		// 	printf("Our history consists of saving in a txt, which we save in the local folder where the project is located, all the commands that are executed listed and separated by line changes. To do this command, we use the functions fopen, fread and fwrite, With fopen we open the file, and if it does not exist it creates it, where the first parameter is the name of the file and the second is the mode, in this case we use \"a\" since it allows adding texti at the end of the file without replacing the previous text, and then with fwrite and fread to write and read the file respectively.");
+		// 	break;
+		// case "ctrl + c" : 
+		// 	printf("The ctrl + c functionality consists in that when this combination of keys is touched, the current process is not destroyed, but it is executed again if the prompt is killed. To do this we create the methods \"signalHandler_child\" and \"signalHandler_int\"; \, in which if when killing the process it returns 0, we change the variable that controls whether we should make a prompt or not.");  
+		// 	break;
+		// case "help" : 
+		// 	printf("This functionality shows us how to use the commands, and in case of only using the help without another command, it shows the functionalities implemented");
+		// 	break;
+}
+
+void saveHistory(char * args){
+    FILE * fichero = fopen(historyFileName, "a");
+    if(!fichero){
+        perror("fopen");
+        exit(EXIT_FAILURE);
+    }
+	char * stringToSave = strcat(buffer,historyCount);
+	strcat(stringToSave, " ");
+	strcat(stringToSave, args);
+    fwrite(stringToSave,1,strlen(stringToSave), fichero);
+	fwrite("\n", 1, strlen("\n"), fichero);
+    fclose(fichero);
+	exit(EXIT_SUCCESS);
+}
+
+void LoadFromHistory(){
+	FILE* inputFile = fopen(historyFileName, "rb+");
+    if(!inputFile) exit(EXIT_FAILURE);
+	struct stat sb;
+	if(stat(historyFileName, &sb) == -1){
+		perror("stat");
+		exit(EXIT_FAILURE);
+	}
+	char * loadHistory = malloc(sb.st_size);
+	fread(loadHistory, sb.st_size, 1, inputFile);
+	printf("%s\n", loadHistory);
+	actualHistory = strcat(buffer,loadHistory);
+	fclose(inputFile);
+	free(loadHistory);
+	exit(EXIT_SUCCESS);
+}
+
+// void Again(int number){
+// 	int i = 0;
+// 	int j = 0;
+// 	int count = 1;
+// 	char * againCommand;
+// 	while (i < strlen(actualHistory))
+// 	{
+// 		if(actualHistory[i] == "\n"){
+// 			if(number == count){
+// 				launchProg(againCommand, );
+// 				break;
+// 			}
+// 			j = 0;
+// 			againCommand = "";
+// 			count++;
+// 		}
+// 		againCommand[j] = actualHistory[i];
+// 		i++;
+// 		j++;
+// 	}
+// }
+
 /**
  * SIGNAL HANDLERS
  */
@@ -342,6 +450,11 @@ int commandHandler(char* args[]) {
 	else if (strcmp(args[0], "true") == 0) return 0;
 	// 'false' comando
 	else if (strcmp(args[0], "false") == 0) return 1;
+	else if (strcmp(args[0], "again") == 0) {
+		if(args[1] != NULL){
+			Again((int) strtol(args[1], NULL, 10);)
+		}
+	}
 	// 'cd' command to change directory
 	else if (strcmp(args[0], "cd") == 0) changeDirectory(args);
 	// 'environ' command to list the environment variables
@@ -408,7 +521,7 @@ int commandHandler(char* args[]) {
 				printf("%i\n", k);
 				// args_aux[k] = NULL;
 				// char* inputFile;
-				// char* outputFile;
+				// char* outputFile;e
 				// if (strcmp(args[i], "<") == 0) {
 				// 	inputFile = directionI;
 				// 	outputFile = NULL;
@@ -554,113 +667,7 @@ int pipeHandler(char* args[]) {
 	}
 }
 
-void Help(char * args[]){
-	if(args[1] == NULL){
-		printf("Members: Aldair Alfonso Perez y Ramon Cruz Alfonso \n \n");
-		printf("Functionalities: \n ");
-		printf("basic: Basic functionalities (3 points) \n"); 
-		printf("background: Operator & and have processes in the background (0.5 points) \n"); 
-		printf("spaces: Spaces between commands and parameters (0.5 points) \n"); 
-		printf("history: Command history (0.5 points) \n"); 
-		printf("ctrl + c: Capture and send signals to processes (0.5 points) \n");
-		printf("if: Conditional expressions (1 points) \n"); 
-		printf("help: Print a help (1 points) \n"); 
-		printf("variables: Variables and backquotes (1 points) \n \n"); 
-		
-		printf("Comandos built-in: \n");
-		printf("cd: Change directories \n");
-		printf("exit: Finish shell \n ");
-		printf("help: Show this help \n ");
-		printf("if: Perform a conditional operation on a single line \n");
-		printf("set/get/unset: Create variables, print their values, delete variables \n \n");
-		printf("Total: 8 points");
-	}
-	else {
-		if(args[1] == "prompt") printf("Our prompt shows us a list of characters, which make up a list of commands indicating that it is waiting for an order. In our case, where our first line shows the following: <user> @ <host> <cwd>> and then, before each command list we print: my-prompt, letting the user know that our shell. We had no difficulty in performing this functionality or exploiting test cases");
-		else if (args[1] == "cd") printf("This command allows you to change the current address, it is very easy, since the chdir function does all the work. In the event that the address that is passed as a parameter is null, it sets x default home, and in case it is not valid, it will print that that address is not found. or we had no difficulty in performing this functionality or cases of tests that exploit");
-		else if (args[1] == "<") printf("We implement this command to redirect the standard input/output of commands to/from files with >/</>>, for this we use \"open\" and \"close\". The open function returns an integer that identifies a descriptor and It has as parameters a pointer to the path of the file that we want to open and some flags that indicate how to open it: read only, write only, read / write or others. The \"close\" function closes the file descriptor that we pass as a parameter. Returns 0 on success and -1 on failure. Then we use the \"setenv\" function to define a new environment variable or change the existing one. Three arguments are required, the first and second of which are char pointers pointing to the variable name and its value, respectively. The third argument is of type int and specifies whether the value of the given variable should be overwritten if it already exists in the environment. The non-zero value of this argument denotes the overwrite behavior and the zero value the opposite.");
-		else if (args[1] == "pipe") printf("A pipeline consists of a chain of processes connected in such a way that the output of each element in the chain is the input of the next. They allow communication and synchronization between processes. The use of data buffer between consecutive elements is common. To implement these we use");
-		else if (args[1] == "history") printf("Our history consists of saving in a txt, which we save in the local folder where the project is located, all the commands that are executed listed and separated by line changes. To do this command, we use the functions fopen, fread and fwrite, With fopen we open the file, and if it does not exist it creates it, where the first parameter is the name of the file and the second is the mode, in this case we use \"a\" since it allows adding texti at the end of the file without replacing the previous text, and then with fwrite and fread to write and read the file respectively.");
-		else if (args[1] == "ctrl + c") printf("The ctrl + c functionality consists in that when this combination of keys is touched, the current process is not destroyed, but it is executed again if the prompt is killed. To do this we create the methods \"signalHandler_child\" and \"signalHandler_int\"; \, in which if when killing the process it returns 0, we change the variable that controls whether we should make a prompt or not.");  
-		else if (args[1] == "help") printf("This functionality shows us how to use the commands, and in case of only using the help without another command, it shows the functionalities implemented");
-	}		
-		// switch (args[1]) {
-		// case "prompt" :
-		// 	printf("Our prompt shows us a list of characters, which make up a list of commands indicating that it is waiting for an order. In our case, where our first line shows the following: <user> @ <host> <cwd>> and then, before each command list we print: my-prompt, letting the user know that our shell. We had no difficulty in performing this functionality or exploiting test cases");
-		// 	break;
-		// case "cd" :
-		// 	printf("This command allows you to change the current address, it is very easy, since the chdir function does all the work. In the event that the address that is passed as a parameter is null, it sets x default home, and in case it is not valid, it will print that that address is not found. or we had no difficulty in performing this functionality or cases of tests that exploit");
-		// 	break;
-		// case "Redireccion de entrada y salida estandar" :
-		// 	printf("We implement this command to redirect the standard input/output of commands to/from files with >/</>>, for this we use \"open\" and \"close\". The open function returns an integer that identifies a descriptor and It has as parameters a pointer to the path of the file that we want to open and some flags that indicate how to open it: read only, write only, read / write or others. The \"close\" function closes the file descriptor that we pass as a parameter. Returns 0 on success and -1 on failure. Then we use the \"setenv\" function to define a new environment variable or change the existing one. Three arguments are required, the first and second of which are char pointers pointing to the variable name and its value, respectively. The third argument is of type int and specifies whether the value of the given variable should be overwritten if it already exists in the environment. The non-zero value of this argument denotes the overwrite behavior and the zero value the opposite.");
-		// 	break;
-		// case "Pipe" : 
-		// 	printf("A pipeline consists of a chain of processes connected in such a way that the output of each element in the chain is the input of the next. They allow communication and synchronization between processes. The use of data buffer between consecutive elements is common. To implement these we use");
-		// 	break;
-		// case "history" : 
-		// 	printf("Our history consists of saving in a txt, which we save in the local folder where the project is located, all the commands that are executed listed and separated by line changes. To do this command, we use the functions fopen, fread and fwrite, With fopen we open the file, and if it does not exist it creates it, where the first parameter is the name of the file and the second is the mode, in this case we use \"a\" since it allows adding texti at the end of the file without replacing the previous text, and then with fwrite and fread to write and read the file respectively.");
-		// 	break;
-		// case "ctrl + c" : 
-		// 	printf("The ctrl + c functionality consists in that when this combination of keys is touched, the current process is not destroyed, but it is executed again if the prompt is killed. To do this we create the methods \"signalHandler_child\" and \"signalHandler_int\"; \, in which if when killing the process it returns 0, we change the variable that controls whether we should make a prompt or not.");  
-		// 	break;
-		// case "help" : 
-		// 	printf("This functionality shows us how to use the commands, and in case of only using the help without another command, it shows the functionalities implemented");
-		// 	break;
-}
 
-void saveHistory(char * args){
-    FILE * fichero = fopen(historyFileName, "a");
-    if(!fichero){
-        perror("fopen");
-        exit(EXIT_FAILURE);
-    }
-	char * stringToSave = strcat(buffer,historyCount);
-	strcat(stringToSave, " ");
-	strcat(stringToSave, args);
-    fwrite(stringToSave,1,strlen(stringToSave), fichero);
-	fwrite("\n", 1, strlen("\n"), fichero);
-    fclose(fichero);
-	exit(EXIT_SUCCESS);
-}
-
-void LoadFromHistory(){
-	FILE* inputFile = fopen(historyFileName, "rb+");
-    if(!inputFile) exit(EXIT_FAILURE);
-	struct stat sb;
-	if(stat(historyFileName, &sb) == -1){
-		perror("stat");
-		exit(EXIT_FAILURE);
-	}
-	char * loadHistory = malloc(sb.st_size);
-	fread(loadHistory, sb.st_size, 1, inputFile);
-	printf("%s\n", loadHistory);
-	actualHistory = strcat(buffer,loadHistory);
-	fclose(inputFile);
-	free(loadHistory);
-	exit(EXIT_SUCCESS);
-}
-
-// void Again(int number){
-// 	int i = 0;
-// 	int j = 0;
-// 	int count = 1;
-// 	char * againCommand;
-// 	while (i < strlen(actualHistory))
-// 	{
-// 		if(actualHistory[i] == "\n"){
-// 			if(number == count){
-// 				launchProg(againCommand, );
-// 				break;
-// 			}
-// 			j = 0;
-// 			againCommand = "";
-// 			count++;
-// 		}
-// 		againCommand[j] = actualHistory[i];
-// 		i++;
-// 		j++;
-// 	}	
-// }
 
 /**
 * Main method of our shell
