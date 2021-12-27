@@ -266,7 +266,6 @@ int fileIO(char* args[], char* inputFile, char* outputFile, int option, int back
 }
 
 char* getDirection(char* args[], int index) {
-	printf("entre getDir\n");
 	char* direction = (char*)malloc(sizeof(char));
 	int k = index + 1;
 	while (args[k] != NULL)
@@ -462,9 +461,7 @@ int pipeHandler(char* args[]) {
 	//Dentro del while me encargo de los caracteres especiales
 	while (args[current] != NULL)
 	{
-		printf("Entre1\n");
 		if (strcmp(args[current], "|") == 0) {
-			printf("Entre2\n");
 			pipes = 1;
 			//Terminar con NULL el array que contiene el comando que se va a ejecutar antes del caracter especial
 			newCommandLine[current] = NULL;
@@ -475,7 +472,6 @@ int pipeHandler(char* args[]) {
 			//Ejecuta el comando que escribe en el pipe
 			int child2Pid = fork();
 			if (child2Pid == 0) {
-				printf("Entre3\n");
 				//Remplaza la salida actual por el fd de escritura del pipe
 				dup2(pipefd[1], STDOUT_FILENO);
 				close(pipefd[0]);
@@ -487,7 +483,6 @@ int pipeHandler(char* args[]) {
 			}
 			//Espera a que se ejecute el primer comando
 			waitpid(child2Pid, NULL, 0);
-			printf("Entre4\n");
 
 			//Cierra el fd de escritura(si esto no se hace aqui el comando que lee se queda esperando mas input)
 			close(pipefd[1]);
@@ -500,9 +495,7 @@ int pipeHandler(char* args[]) {
 
 		current++;
 	}
-	printf("%i\n", current);
 	if (pipes == 1) {
-		printf("Entre5\n");
 		current++;
 		int current1 = 0;
 		char* newCommandLine1[LIMIT];
