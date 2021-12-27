@@ -222,46 +222,67 @@ void launchProg(char** args, int background) {
 /**
 * Method used to manage I/O redirection
 */
-void fileIO(char* args[], char* inputFile, char* outputFile, int option) {
+int fileIO(char* args[], char* inputFile, char* outputFile, int option, int background) {
+	int fd1;
+	int stdifd;
+	//Comprobar si debe redireccionarse la entrada
+	if (inputFile != NULL) {
+		//Abrir el nuevo fd del archivo
+		fd1 = open(inputFile, O_RDONLY, 0);
+		//Si no se puede abrir el archivo devolver -1(error)
+		if (fd1 == -1)return -1;
 
-	int err = -1;
-
-	int fileDescriptor; // between 0 and 19, describing the output or input file
-
-	if ((pid = fork()) == -1) {
-		printf("Child process could not be created\n");
-		return;
+		//Guardar el fd de la entrada estandar y cambiarlo por el nuevo fd
+		stdifd = dup(STDIN_FILENO);
+		dup2(fd1, STDIN_FILENO);
 	}
-	if (pid == 0) {
-		// Option 0: output redirection
-		if (option == 0) {
-			// We open (create) the file truncating it at 0, for write only
-			fileDescriptor = open(outputFile, O_CREAT | O_TRUNC | O_WRONLY, 0600);
-			// We replace de standard output with the appropriate file
-			dup2(fileDescriptor, STDOUT_FILENO);
-			close(fileDescriptor);
-			// Option 1: input and output redirection
-		}
-		else if (option == 1) {
-			// We open file for read only (it's STDIN)
-			fileDescriptor = open(inputFile, O_RDONLY, 0600);
-			// We replace de standard input with the appropriate file
-			dup2(fileDescriptor, STDIN_FILENO);
-			close(fileDescriptor);
-			// Same as before for the output file
-			fileDescriptor = open(outputFile, O_CREAT | O_TRUNC | O_WRONLY, 0600);
-			dup2(fileDescriptor, STDOUT_FILENO);
-			close(fileDescriptor);
-		}
 
-		setenv("parent", getcwd(currentDirectory, 1024), 1);
-
-		if (execvp(args[0], args) == err) {
-			printf("err");
-			kill(getpid(), SIGTERM);
+	int fd2;
+	int stdofd;
+	//Comprobar si debe redireccionarse la salida
+	if (outputFile != NULL) {
+		if (option == 1) {
+			fd2 = open(outputFile, O_WRONLY | O_APPEND | O_CREAT, 0);
+			if (fd2 == -1)return -1;
 		}
+		else if (option == 0) {
+			fd2 = open(outputFile, O_WRONLY | O_TRUNC | O_CREAT, 0);
+			if (fd2 == -1)return -1;
+		}
+		stdofd = dup(STDOUT_FILENO);
+		dup2(fd2, STDOUT_FILENO);
 	}
-	waitpid(pid, NULL, 0);
+
+	launchProg(args, background);
+
+	if (inputFile != NULL) {
+		dup2(stdifd, STDIN_FILENO);
+		close(fd1);
+	}
+	if (outputFile != NULL) {
+		dup2(stdofd, STDOUT_FILENO);
+		close(fd2);
+	}
+}
+
+char* getDirection(char* args[], int index) {
+	printf("entre getDir\n");
+	char* direction = (char*)malloc(sizeof(char));
+	int k = index + 1;
+	while (args[k] != NULL)
+	{
+		if (strcmp(args[k], ">") != 0 || strcmp(args[k], "<") != 0 ||
+			strcmp(args[k], ">>") != 0) {
+			direction = strcat(direction, args[k]);
+			if (args[k + 1] != NULL && (strcmp(args[k], ">") != 0 && strcmp(args[k], "<") != 0 &&
+				strcmp(args[k], ">>") != 0)) {
+				direction = strcat(direction, " ");
+
+			}
+		}
+		k++;
+	}
+	return direction;
 }
 
 /**
@@ -353,42 +374,53 @@ int commandHandler(char* args[]) {
 				// the appropriate method that will handle the different
 				// executions
 			}
-			else if (strcmp(args[i], "<") == 0) {
-				aux = i + 1;
-				// int k = 0;
-				// while (args[k] != NULL)
-				// {
-				// 	printf("%s",args[k++]);
-				// }
-
-				// printf("%s\n", args[aux]);
-				// printf("%s\n", args[aux + 1]);
-				// printf("%s\n", args[aux + 2]);
-				if (args[aux] == NULL
-					// || args[aux + 1] == NULL || args[aux + 2] == NULL
-					) {
-					printf("Not enough input arguments\n");
-					return -1;
+			else if (strcmp(args[i], "<") == 0 || strcmp(args[i], ">") == 0 ||
+				strcmp(args[i], ">>") == 0) {
+				char* directionO;
+				char* directionI;
+				int option;
+				int k = 0;
+				while (args[k] != NULL)
+				{
+					if (strcmp(args[k], "|") != 0) {
+						if (strcmp(args[k], "<") == 0) {
+							directionI = getDirection(args, k);
+							option = 2;
+						}
+						if (strcmp(args[k], ">") == 0) {
+							directionO = getDirection(args, k);
+							option = 0;
+						}
+						if (strcmp(args[k], ">>") == 0) {
+							directionO = getDirection(args, k);
+							option = 1;
+						}
+					}
+					k++;
 				}
-				// else {
-				// 	if (strcmp(args[aux + 1], ">") != 0) {
-				// 		printf("Usage: Expected '>' and found %s\n", args[aux + 1]);
-				// 		return -2;
-				// 	}
+				args[k] = NULL;
+				// char* inputFile;
+				// char* outputFile;
+				// if (strcmp(args[i], "<") == 0) {
+				// 	inputFile = directionI;
+				// 	outputFile = NULL;
 				// }
-				fileIO(args_aux, args[i - 1], args[i + 1], 1);
-				return 1;
-			}
-			// If '>' is detected, we have output redirection.
-			// First we check if the structure given is the correct one,
-			// and if that is the case we call the appropriate method
-			else if (strcmp(args[i], ">") == 0) {
-				if (args[i + 1] == NULL) {
-					printf("Not enough input arguments\n");
-					return -1;
-				}
-				fileIO(args_aux, NULL, args[i + 1], 0);
-				return 1;
+				// if (strcmp(args[i], ">") == 0) {
+				// 	inputFile = NULL;
+				// 	outputFile = directionO;
+				// }
+				// if (strcmp(args[i], ">>") == 0) {
+				// 	inputFile = NULL;
+				// 	outputFile = directionO;
+				// }
+				// printf("%s\n",directionO);
+				// printf("%s\n",directionI);
+				fileIO(args_aux, directionI, directionO, option, background);
+				directionI = NULL;
+				directionO = NULL;
+				free(directionI);
+				free(directionO);
+				return 0;
 			}
 			i++;
 		}
@@ -424,7 +456,7 @@ int pipeHandler(char* args[]) {
 	//Para ir guardando los pedazos de comandos separados por pipes
 	char* newCommandLine[LIMIT];
 
-	int pipes = 0;
+	int pipes ;
 	int pipefd[2];
 
 	//Dentro del while me encargo de los caracteres especiales
