@@ -223,10 +223,12 @@ void launchProg(char** args, int background) {
 * Method used to manage I/O redirection
 */
 int fileIO(char* args[], char* inputFile, char* outputFile, int option, int background) {
+	printf("%s output 2, backgorund %i\n", args[0], background);
 	int fd1;
 	int stdifd;
 	//Comprobar si debe redireccionarse la entrada
 	if (inputFile != NULL) {
+		printf("%s input\n", inputFile);
 		//Abrir el nuevo fd del archivo
 		fd1 = open(inputFile, O_RDONLY, 0);
 		//Si no se puede abrir el archivo devolver -1(error)
@@ -236,11 +238,12 @@ int fileIO(char* args[], char* inputFile, char* outputFile, int option, int back
 		stdifd = dup(STDIN_FILENO);
 		dup2(fd1, STDIN_FILENO);
 	}
-
 	int fd2;
 	int stdofd;
 	//Comprobar si debe redireccionarse la salida
 	if (outputFile != NULL) {
+		printf("%s output\n", outputFile);
+
 		if (option == 1) {
 			fd2 = open(outputFile, O_WRONLY | O_APPEND | O_CREAT, 0);
 			if (fd2 == -1)return -1;
@@ -255,19 +258,20 @@ int fileIO(char* args[], char* inputFile, char* outputFile, int option, int back
 
 	launchProg(args, background);
 
-	if (inputFile != NULL) {
-		dup2(stdifd, STDIN_FILENO);
-		close(fd1);
-	}
 	if (outputFile != NULL) {
 		dup2(stdofd, STDOUT_FILENO);
 		close(fd2);
 	}
+	if (inputFile != NULL) {
+		dup2(stdifd, STDIN_FILENO);
+		close(fd1);
+	}
+
 }
 
-char* getDirection(char* args[], int index) {
+char* getDirection(char* args[], int* index) {
 	char* direction = (char*)malloc(sizeof(char));
-	int k = index + 1;
+	int k = *index + 1;
 	while (args[k] != NULL)
 	{
 		if (strcmp(args[k], ">") != 0 || strcmp(args[k], "<") != 0 ||
@@ -281,6 +285,8 @@ char* getDirection(char* args[], int index) {
 		}
 		k++;
 	}
+	*index = k - 1;
+	// printf("Sali direction\n");
 	return direction;
 }
 
@@ -381,23 +387,25 @@ int commandHandler(char* args[]) {
 				int k = 0;
 				while (args[k] != NULL)
 				{
+					// printf("%s\n", args[k]);
 					if (strcmp(args[k], "|") != 0) {
 						if (strcmp(args[k], "<") == 0) {
-							directionI = getDirection(args, k);
+							directionI = getDirection(args, &k);
 							option = 2;
 						}
 						if (strcmp(args[k], ">") == 0) {
-							directionO = getDirection(args, k);
+							directionO = getDirection(args, &k);
 							option = 0;
 						}
 						if (strcmp(args[k], ">>") == 0) {
-							directionO = getDirection(args, k);
+							directionO = getDirection(args, &k);
 							option = 1;
 						}
 					}
 					k++;
 				}
-				args[k] = NULL;
+				printf("%i\n", k);
+				// args_aux[k] = NULL;
 				// char* inputFile;
 				// char* outputFile;
 				// if (strcmp(args[i], "<") == 0) {
@@ -412,8 +420,12 @@ int commandHandler(char* args[]) {
 				// 	inputFile = NULL;
 				// 	outputFile = directionO;
 				// }
-				// printf("%s\n",directionO);
-				// printf("%s\n",directionI);
+				//printf("%s\n",directionO);
+				if (directionI != NULL)
+					printf("%s input 0\n", directionI);
+				if (directionO != NULL)
+					printf("%s output 0\n", directionO);
+				printf("hi\n");
 				fileIO(args_aux, directionI, directionO, option, background);
 				directionI = NULL;
 				directionO = NULL;
@@ -455,7 +467,7 @@ int pipeHandler(char* args[]) {
 	//Para ir guardando los pedazos de comandos separados por pipes
 	char* newCommandLine[LIMIT];
 
-	int pipes ;
+	int pipes;
 	int pipefd[2];
 
 	//Dentro del while me encargo de los caracteres especiales
