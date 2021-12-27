@@ -265,108 +265,6 @@ void fileIO(char* args[], char* inputFile, char* outputFile, int option) {
 }
 
 /**
- * Metodo para parsear los angulares
- */
-
-char* parseAngular() {
-
-}
-
-/**
-* Method used to manage pipes.
-*/
-void pipeHandler(char* args[]) {
-	//Para continuar revisando desde donde me quede cuando la llamada venga de un pipe
-	int current = 0;
-	//Para saber si algun metodo me devuelve -1
-	int correctOutput = 0;
-	//Para guardar los file descriptors de STDIN y STDOUT cuando haga falta
-	int fd;
-	//Para ir guardando los pedazos de comandos separados por pipes
-	char* newCommandLine[LIMIT];
-
-	int pipes = 0;
-
-	//Dentro del while me encargo de los caracteres especiales
-	while (args[current] != NULL)
-	{
-		if (strcmp(args[current], "|") == 0) {
-			pipes = 1;
-			//Terminar con NULL el array que contiene el comando que se va a ejecutar antes del caracter especial
-			newCommandLine[current] = NULL;
-
-			//Crear el pipe (lee de la izquierda y escribe en la derecha)
-			int pipefd[2];
-			pipe(pipefd);
-
-			//Ejecuta el comando que escribe en el pipe
-			int child2Pid = fork();
-			if (child2Pid == 0) {
-				//Remplaza la salida actual por el fd de escritura del pipe
-				dup2(pipefd[1], STDOUT_FILENO);
-				close(pipefd[0]);
-				close(pipefd[1]);
-
-				//Ejecuta el comando que estaba antes del pipe
-				correctOutput = commandHandler(newCommandLine);
-				exit(correctOutput);
-			}
-			//Espera a que se ejecute el primer comando
-			waitpid(child2Pid, NULL, 0);
-
-			//Cierra el fd de escritura(si esto no se hace aqui el comando que lee se queda esperando mas input)
-			close(pipefd[1]);
-
-			break
-		}
-		else {
-			newCommandLine[current] = args[current];
-		}
-
-		current++;
-	}
-
-	current++;
-	int current1 = 0;
-	char* newCommandLine1[LIMIT];
-	while (args[current] != NULL)
-	{
-		newCommandLine1[current1] = args[current];
-		current1++;
-		current++;
-	}
-
-
-	//A current le resto startPos por si no empece a revisar desde el principio de args 
-	newCommandLine[current1] = NULL;
-
-	if (pipes == 1) {
-		//Ejecuta el comando que escribe en el pipe
-		int childPid = fork();
-		if (childPid == 0) {
-			//Remplaza la salida actual por el fd de escritura del pipe
-			dup2(pipefd[0], STDIN_FILENO);
-			close(pipefd[0]);
-			close(pipefd[1]);
-
-			//Ejecuta el comando que estaba antes del pipe
-			correctOutput = commandHandler(newCommandLine);
-			exit(correctOutput);
-		}
-		//Espera a que se ejecute el primer comando
-		waitpid(childPid, NULL, 0);
-
-		//Cierra el fd de escritura(si esto no se hace aqui el comando que lee se queda esperando mas input)
-		close(pipefd[0]);
-	}
-	else
-	{
-		//Llegados a este punto el comando actual no tiene caracteres especiales asi que lo ejecuto
-		return commandHandler(newCommandLine);
-	}
-}
-
-/**
 * Method used to handle the commands entered via the standard input
 */
 int commandHandler(char* args[]) {
@@ -510,6 +408,112 @@ int commandHandler(char* args[]) {
 		 //	}
 	}
 	return 1;
+}
+
+/**
+* Method used to manage pipes.
+*/
+int pipeHandler(char* args[]) {
+	//TODO: Poner esto mas bonito
+	//Para continuar revisando desde donde me quede cuando la llamada venga de un pipe
+	int current = 0;
+	//Para saber si algun metodo me devuelve -1
+	int correctOutput = 0;
+	//Para guardar los file descriptors de STDIN y STDOUT cuando haga falta
+	int fd;
+	//Para ir guardando los pedazos de comandos separados por pipes
+	char* newCommandLine[LIMIT];
+
+	int pipes = 0;
+	int pipefd[2];
+
+	//Dentro del while me encargo de los caracteres especiales
+	while (args[current] != NULL)
+	{
+		printf("Entre1\n");
+		if (strcmp(args[current], "|") == 0) {
+			printf("Entre2\n");
+			pipes = 1;
+			//Terminar con NULL el array que contiene el comando que se va a ejecutar antes del caracter especial
+			newCommandLine[current] = NULL;
+
+			//Crear el pipe (lee de la izquierda y escribe en la derecha)
+			pipe(pipefd);
+
+			//Ejecuta el comando que escribe en el pipe
+			int child2Pid = fork();
+			if (child2Pid == 0) {
+				printf("Entre3\n");
+				//Remplaza la salida actual por el fd de escritura del pipe
+				dup2(pipefd[1], STDOUT_FILENO);
+				close(pipefd[0]);
+				close(pipefd[1]);
+
+				//Ejecuta el comando que estaba antes del pipe
+				correctOutput = commandHandler(newCommandLine);
+				exit(correctOutput);
+			}
+			//Espera a que se ejecute el primer comando
+			waitpid(child2Pid, NULL, 0);
+			printf("Entre4\n");
+
+			//Cierra el fd de escritura(si esto no se hace aqui el comando que lee se queda esperando mas input)
+			close(pipefd[1]);
+
+			break;
+		}
+		else {
+			newCommandLine[current] = args[current];
+		}
+
+		current++;
+	}
+	printf("%i\n", current);
+	if (pipes == 1) {
+		printf("Entre5\n");
+		current++;
+		int current1 = 0;
+		char* newCommandLine1[LIMIT];
+		while (args[current] != NULL)
+		{
+			newCommandLine1[current1] = args[current];
+			current1++;
+			current++;
+		}
+
+
+		//A current le resto startPos por si no empece a revisar desde el principio de args 
+		newCommandLine[current1] = NULL;
+
+		// int k = 0;
+		// while (args[k] != NULL)
+		// {
+		// 	printf("%s\n", newCommandLine1[k++]);
+		// }
+
+		//Ejecuta el comando que escribe en el pipe
+		int childPid = fork();
+		if (childPid == 0) {
+			//Remplaza la salida actual por el fd de escritura del pipe
+			dup2(pipefd[0], STDIN_FILENO);
+			close(pipefd[0]);
+			close(pipefd[1]);
+
+			//Ejecuta el comando que estaba antes del pipe
+			correctOutput = commandHandler(newCommandLine1);
+			exit(correctOutput);
+		}
+		//Espera a que se ejecute el primer comando
+		waitpid(childPid, NULL, 0);
+
+		//Cierra el fd de escritura(si esto no se hace aqui el comando que lee se queda esperando mas input)
+		close(pipefd[0]);
+	}
+	else
+	{
+		//Llegados a este punto el comando actual no tiene caracteres especiales asi que lo ejecuto
+		return commandHandler(newCommandLine);
+	}
 }
 
 /**
