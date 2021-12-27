@@ -11,11 +11,21 @@
 #define TRUE 1
 #define FALSE !TRUE
 
+#ifndef MAX
+#define MAX 1024
+#endif
+
+static char buffer[MAX];
+
 // Shell pid, pgid, terminal modes
 static pid_t GBSH_PID;
 static pid_t GBSH_PGID;
 static int GBSH_IS_INTERACTIVE;
 static struct termios GBSH_TMODES;
+const char * historyFileName = "history.txt";
+static int historyCount;
+static char * actualHistory;
+
 
 static char* currentDirectory;
 extern char** environ;
@@ -42,3 +52,5 @@ int changeDirectory(char * args[]);
 int parseline(char* buf, char** argv);
 void eval(char* cmdline);
 int builtin_command(char** argv);
+void saveHistory(char* args);
+void loadHistory();
