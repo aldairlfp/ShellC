@@ -58,19 +58,19 @@ void init() {
 	}
 }
 
-void Help(char * args[]){
-	if(args[1] == NULL){
+void Help(char* args[]) {
+	if (args[1] == NULL) {
 		printf("Members: Aldair Alfonso Perez y Ramon Cruz Alfonso \n \n");
 		printf("Functionalities: \n ");
-		printf("basic: Basic functionalities (3 points) \n"); 
-		printf("background: Operator & and have processes in the background (0.5 points) \n"); 
-		printf("spaces: Spaces between commands and parameters (0.5 points) \n"); 
-		printf("history: Command history (0.5 points) \n"); 
+		printf("basic: Basic functionalities (3 points) \n");
+		printf("background: Operator & and have processes in the background (0.5 points) \n");
+		printf("spaces: Spaces between commands and parameters (0.5 points) \n");
+		printf("history: Command history (0.5 points) \n");
 		printf("ctrl + c: Capture and send signals to processes (0.5 points) \n");
-		printf("if: Conditional expressions (1 points) \n"); 
-		printf("help: Print a help (1 points) \n"); 
-		printf("variables: Variables and backquotes (1 points) \n \n"); 
-		
+		printf("if: Conditional expressions (1 points) \n");
+		printf("help: Print a help (1 points) \n");
+		printf("variables: Variables and backquotes (1 points) \n \n");
+
 		printf("Comandos built-in: \n");
 		printf("cd: Change directories \n");
 		printf("exit: Finish shell \n ");
@@ -80,36 +80,36 @@ void Help(char * args[]){
 		printf("Total: 8 points");
 	}
 	else {
-		if(args[1] == "prompt") printf("Our prompt shows us a list of characters, which make up a list of commands indicating that it is waiting for an order. In our case, where our first line shows the following: <user> @ <host> <cwd>> and then, before each command list we print: my-prompt, letting the user know that our shell. We had no difficulty in performing this functionality or exploiting test cases");
+		if (args[1] == "prompt") printf("Our prompt shows us a list of characters, which make up a list of commands indicating that it is waiting for an order. In our case, where our first line shows the following: <user> @ <host> <cwd>> and then, before each command list we print: my-prompt, letting the user know that our shell. We had no difficulty in performing this functionality or exploiting test cases");
 		else if (args[1] == "cd") printf("This command allows you to change the current address, it is very easy, since the chdir function does all the work. In the event that the address that is passed as a parameter is null, it sets x default home, and in case it is not valid, it will print that that address is not found. or we had no difficulty in performing this functionality or cases of tests that exploit");
 		else if (args[1] == "<") printf("We implement this command to redirect the standard input/output of commands to/from files with >/</>>, for this we use \"open\" and \"close\". The open function returns an integer that identifies a descriptor and It has as parameters a pointer to the path of the file that we want to open and some flags that indicate how to open it: read only, write only, read / write or others. The \"close\" function closes the file descriptor that we pass as a parameter. Returns 0 on success and -1 on failure. Then we use the \"setenv\" function to define a new environment variable or change the existing one. Three arguments are required, the first and second of which are char pointers pointing to the variable name and its value, respectively. The third argument is of type int and specifies whether the value of the given variable should be overwritten if it already exists in the environment. The non-zero value of this argument denotes the overwrite behavior and the zero value the opposite.");
 		else if (args[1] == "pipe") printf("A pipeline consists of a chain of processes connected in such a way that the output of each element in the chain is the input of the next. They allow communication and synchronization between processes. The use of data buffer between consecutive elements is common. To implement these we use");
 		else if (args[1] == "history") printf("Our history consists of saving in a txt, which we save in the local folder where the project is located, all the commands that are executed listed and separated by line changes. To do this command, we use the functions fopen, fread and fwrite, With fopen we open the file, and if it does not exist it creates it, where the first parameter is the name of the file and the second is the mode, in this case we use \"a\" since it allows adding texti at the end of the file without replacing the previous text, and then with fwrite and fread to write and read the file respectively.");
-		else if (args[1] == "ctrl + c") printf("The ctrl + c functionality consists in that when this combination of keys is touched, the current process is not destroyed, but it is executed again if the prompt is killed. To do this we create the methods \"signalHandler_child\" and \"signalHandler_int\"; \, in which if when killing the process it returns 0, we change the variable that controls whether we should make a prompt or not.");  
+		else if (args[1] == "ctrl + c") printf("The ctrl + c functionality consists in that when this combination of keys is touched, the current process is not destroyed, but it is executed again if the prompt is killed. To do this we create the methods \"signalHandler_child\" and \"signalHandler_int\"; \, in which if when killing the process it returns 0, we change the variable that controls whether we should make a prompt or not.");
 		else if (args[1] == "help") printf("This functionality shows us how to use the commands, and in case of only using the help without another command, it shows the functionalities implemented");
-	}		
-		// switch (args[1]) {
-		// case "prompt" :
-		// 	printf("Our prompt shows us a list of characters, which make up a list of commands indicating that it is waiting for an order. In our case, where our first line shows the following: <user> @ <host> <cwd>> and then, before each command list we print: my-prompt, letting the user know that our shell. We had no difficulty in performing this functionality or exploiting test cases");
-		// 	break;
-		// case "cd" :
-		// 	printf("This command allows you to change the current address, it is very easy, since the chdir function does all the work. In the event that the address that is passed as a parameter is null, it sets x default home, and in case it is not valid, it will print that that address is not found. or we had no difficulty in performing this functionality or cases of tests that exploit");
-		// 	break;
-		// case "Redireccion de entrada y salida estandar" :
-		// 	printf("We implement this command to redirect the standard input/output of commands to/from files with >/</>>, for this we use \"open\" and \"close\". The open function returns an integer that identifies a descriptor and It has as parameters a pointer to the path of the file that we want to open and some flags that indicate how to open it: read only, write only, read / write or others. The \"close\" function closes the file descriptor that we pass as a parameter. Returns 0 on success and -1 on failure. Then we use the \"setenv\" function to define a new environment variable or change the existing one. Three arguments are required, the first and second of which are char pointers pointing to the variable name and its value, respectively. The third argument is of type int and specifies whether the value of the given variable should be overwritten if it already exists in the environment. The non-zero value of this argument denotes the overwrite behavior and the zero value the opposite.");
-		// 	break;
-		// case "Pipe" : 
-		// 	printf("A pipeline consists of a chain of processes connected in such a way that the output of each element in the chain is the input of the next. They allow communication and synchronization between processes. The use of data buffer between consecutive elements is common. To implement these we use");
-		// 	break;
-		// case "history" : 
-		// 	printf("Our history consists of saving in a txt, which we save in the local folder where the project is located, all the commands that are executed listed and separated by line changes. To do this command, we use the functions fopen, fread and fwrite, With fopen we open the file, and if it does not exist it creates it, where the first parameter is the name of the file and the second is the mode, in this case we use \"a\" since it allows adding texti at the end of the file without replacing the previous text, and then with fwrite and fread to write and read the file respectively.");
-		// 	break;
-		// case "ctrl + c" : 
-		// 	printf("The ctrl + c functionality consists in that when this combination of keys is touched, the current process is not destroyed, but it is executed again if the prompt is killed. To do this we create the methods \"signalHandler_child\" and \"signalHandler_int\"; \, in which if when killing the process it returns 0, we change the variable that controls whether we should make a prompt or not.");  
-		// 	break;
-		// case "help" : 
-		// 	printf("This functionality shows us how to use the commands, and in case of only using the help without another command, it shows the functionalities implemented");
-		// 	break;
+	}
+	// switch (args[1]) {
+	// case "prompt" :
+	// 	printf("Our prompt shows us a list of characters, which make up a list of commands indicating that it is waiting for an order. In our case, where our first line shows the following: <user> @ <host> <cwd>> and then, before each command list we print: my-prompt, letting the user know that our shell. We had no difficulty in performing this functionality or exploiting test cases");
+	// 	break;
+	// case "cd" :
+	// 	printf("This command allows you to change the current address, it is very easy, since the chdir function does all the work. In the event that the address that is passed as a parameter is null, it sets x default home, and in case it is not valid, it will print that that address is not found. or we had no difficulty in performing this functionality or cases of tests that exploit");
+	// 	break;
+	// case "Redireccion de entrada y salida estandar" :
+	// 	printf("We implement this command to redirect the standard input/output of commands to/from files with >/</>>, for this we use \"open\" and \"close\". The open function returns an integer that identifies a descriptor and It has as parameters a pointer to the path of the file that we want to open and some flags that indicate how to open it: read only, write only, read / write or others. The \"close\" function closes the file descriptor that we pass as a parameter. Returns 0 on success and -1 on failure. Then we use the \"setenv\" function to define a new environment variable or change the existing one. Three arguments are required, the first and second of which are char pointers pointing to the variable name and its value, respectively. The third argument is of type int and specifies whether the value of the given variable should be overwritten if it already exists in the environment. The non-zero value of this argument denotes the overwrite behavior and the zero value the opposite.");
+	// 	break;
+	// case "Pipe" : 
+	// 	printf("A pipeline consists of a chain of processes connected in such a way that the output of each element in the chain is the input of the next. They allow communication and synchronization between processes. The use of data buffer between consecutive elements is common. To implement these we use");
+	// 	break;
+	// case "history" : 
+	// 	printf("Our history consists of saving in a txt, which we save in the local folder where the project is located, all the commands that are executed listed and separated by line changes. To do this command, we use the functions fopen, fread and fwrite, With fopen we open the file, and if it does not exist it creates it, where the first parameter is the name of the file and the second is the mode, in this case we use \"a\" since it allows adding texti at the end of the file without replacing the previous text, and then with fwrite and fread to write and read the file respectively.");
+	// 	break;
+	// case "ctrl + c" : 
+	// 	printf("The ctrl + c functionality consists in that when this combination of keys is touched, the current process is not destroyed, but it is executed again if the prompt is killed. To do this we create the methods \"signalHandler_child\" and \"signalHandler_int\"; \, in which if when killing the process it returns 0, we change the variable that controls whether we should make a prompt or not.");  
+	// 	break;
+	// case "help" : 
+	// 	printf("This functionality shows us how to use the commands, and in case of only using the help without another command, it shows the functionalities implemented");
+	// 	break;
 }
 
 // void saveHistory(char * args){
@@ -331,46 +331,59 @@ void launchProg(char** args, int background) {
 /**
 * Method used to manage I/O redirection
 */
-void fileIO(char* args[], char* inputFile, char* outputFile, int option) {
-	 
-	int err = -1;
-	
-	int fileDescriptor; // between 0 and 19, describing the output or input file
-	
-	if((pid=fork())==-1){
-		printf("Child process could not be created\n");
-		return;
-	}
-	if(pid==0){
-		// Option 0: output redirection
-		if (option == 0){
-			// We open (create) the file truncating it at 0, for write only
-			fileDescriptor = open(outputFile, O_CREAT | O_TRUNC | O_WRONLY, 0600); 
-			// We replace de standard output with the appropriate file
-			dup2(fileDescriptor, STDOUT_FILENO); 
-			close(fileDescriptor);
-		// Option 1: input and output redirection
-		}else if (option == 2){
-			// We open file for read only (it's STDIN)
-			fileDescriptor = open(inputFile, O_RDONLY, 0600);  
-			// We replace de standard input with the appropriate file
-			dup2(fileDescriptor, STDIN_FILENO);
-			close(fileDescriptor);
-			// // Same as before for the output file
-			// fileDescriptor = open(outputFile, O_CREAT | O_TRUNC | O_WRONLY, 0600);
-			// dup2(fileDescriptor, STDOUT_FILENO);
-			// close(fileDescriptor);		 
-		}
-		 
-		setenv("parent",getcwd(currentDirectory, 1024),1);
-		
-		if (execvp(args[0],args)==err){
-			printf("err");
-			kill(getpid(),SIGTERM);
-		}		 
-	}
-	waitpid(pid,NULL,0);
+int fileIO(char* args[], char* inputFile, char* outputFile, int option, int background) {
+	printf("%s output 2, backgorund %i\n", args[0], background);
 
+	pid = fork();
+	if (pid == 0) {
+		int fd1;
+		int stdifd;
+		//Comprobar si debe redireccionarse la entrada
+		if (inputFile != NULL) {
+			printf("%s input\n", inputFile);
+			//Abrir el nuevo fd del archivo
+			fd1 = open(inputFile, O_RDONLY, 0);
+			printf("%i\n", fd1);
+			//Si no se puede abrir el archivo devolver -1(error)
+			if (fd1 < 0)return -1;
+
+			// //Guardar el fd de la entrada estandar y cambiarlo por el nuevo fd
+			// stdifd = dup(STDIN_FILENO);
+			dup2(fd1, STDIN_FILENO);
+			close(fd1);
+		}
+
+
+		//Comprobar si debe redireccionarse la salida
+		if (outputFile != NULL) {
+			int fd2;
+			int stdofd;
+			printf("%s output\n", outputFile);
+
+			if (option == 1) {
+				fd2 = open(outputFile, O_WRONLY | O_APPEND | O_CREAT, 0);
+				if (fd2 == -1)return -1;
+			}
+			else if (option == 0) {
+				fd2 = open(outputFile, O_WRONLY | O_TRUNC | O_CREAT, 0);
+				if (fd2 == -1)return -1;
+			}
+			// stdofd = dup(STDOUT_FILENO);
+			dup2(fd2, STDOUT_FILENO);
+			close(fd2);
+		}
+
+		launchProg(args, background);
+
+		// if (outputFile != NULL) {
+		// 	dup2(stdofd, STDOUT_FILENO);
+		// 	close(fd2);
+		// }
+		// if (inputFile != NULL) {
+		// 	dup2(stdifd, STDIN_FILENO);
+		// 	close(fd1);
+		// }
+	}
 }
 
 char* getDirection(char* args[], int* index) {
@@ -516,7 +529,7 @@ int commandHandler(char* args[]) {
 				printf("%i\n", k);
 				// args_aux[k] = NULL;
 				// char* inputFile;
-				// char* outputFile;e
+				// char* outputFile;
 				// if (strcmp(args[i], "<") == 0) {
 				// 	inputFile = directionI;
 				// 	outputFile = NULL;
@@ -535,7 +548,7 @@ int commandHandler(char* args[]) {
 				if (directionO != NULL)
 					printf("%s output 0\n", directionO);
 				printf("hi\n");
-				fileIO(args_aux, directionI, directionO, option);
+				fileIO(args_aux, directionI, directionO, option, background);
 				directionI = NULL;
 				directionO = NULL;
 				free(directionI);
