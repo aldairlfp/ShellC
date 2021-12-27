@@ -331,59 +331,46 @@ void launchProg(char** args, int background) {
 /**
 * Method used to manage I/O redirection
 */
-int fileIO(char* args[], char* inputFile, char* outputFile, int option, int background) {
-	printf("%s output 2, backgorund %i\n", args[0], background);
+void fileIO(char* args[], char* inputFile, char* outputFile, int option, int background) {
+	int err = -1;
 
-	pid = fork();
-	if (pid == 0) {
-		int fd1;
-		int stdifd;
-		//Comprobar si debe redireccionarse la entrada
-		if (inputFile != NULL) {
-			printf("%s input\n", inputFile);
-			//Abrir el nuevo fd del archivo
-			fd1 = open(inputFile, O_RDONLY, 0);
-			printf("%i\n", fd1);
-			//Si no se puede abrir el archivo devolver -1(error)
-			if (fd1 < 0)return -1;
+	int fileDescriptor; // between 0 and 19, describing the output or input file
 
-			// //Guardar el fd de la entrada estandar y cambiarlo por el nuevo fd
-			// stdifd = dup(STDIN_FILENO);
-			dup2(fd1, STDIN_FILENO);
-			close(fd1);
-		}
-
-
-		//Comprobar si debe redireccionarse la salida
-		if (outputFile != NULL) {
-			int fd2;
-			int stdofd;
-			printf("%s output\n", outputFile);
-
-			if (option == 1) {
-				fd2 = open(outputFile, O_WRONLY | O_APPEND | O_CREAT, 0);
-				if (fd2 == -1)return -1;
-			}
-			else if (option == 0) {
-				fd2 = open(outputFile, O_WRONLY | O_TRUNC | O_CREAT, 0);
-				if (fd2 == -1)return -1;
-			}
-			// stdofd = dup(STDOUT_FILENO);
-			dup2(fd2, STDOUT_FILENO);
-			close(fd2);
-		}
-
-		launchProg(args, background);
-
-		// if (outputFile != NULL) {
-		// 	dup2(stdofd, STDOUT_FILENO);
-		// 	close(fd2);
-		// }
-		// if (inputFile != NULL) {
-		// 	dup2(stdifd, STDIN_FILENO);
-		// 	close(fd1);
-		// }
+	if ((pid = fork()) == -1) {
+		printf("Child process could not be created\n");
+		return;
 	}
+	if (pid == 0) {
+		// printf("option %i\n", option);
+		// Option 0: output redirection
+		if (option == 0) {
+			// We open (create) the file truncating it at 0, for write only
+			fileDescriptor = open(outputFile, O_CREAT | O_TRUNC | O_WRONLY, 0600);
+			// We replace de standard output with the appropriate file
+			dup2(fileDescriptor, STDOUT_FILENO);
+			close(fileDescriptor);
+			// Option 1: input and output redirection
+		}
+		else if (option == 2) {
+			// We open file for read only (it's STDIN)
+			fileDescriptor = open(inputFile, O_RDONLY, 0600);
+			// We replace de standard input with the appropriate file
+			dup2(fileDescriptor, STDIN_FILENO);
+			close(fileDescriptor);
+			// // Same as before for the output file
+			// fileDescriptor = open(outputFile, O_CREAT | O_TRUNC | O_WRONLY, 0600);
+			// dup2(fileDescriptor, STDOUT_FILENO);
+			// close(fileDescriptor);		 
+		}
+
+		setenv("parent", getcwd(currentDirectory, 1024), 1);
+
+		if (execvp(args[0], args) == err) {
+			printf("err");
+			kill(getpid(), SIGTERM);
+		}
+	}
+	waitpid(pid, NULL, 0);
 }
 
 char* getDirection(char* args[], int* index) {
@@ -432,6 +419,13 @@ int commandHandler(char* args[]) {
 		args_aux[j] = args[j];
 		j++;
 	}
+
+	// int k = 0;
+	// while (args_aux[k] != NULL)
+	// {
+	// 	printf("%s\n", args_aux[k]);
+	// 	k++;
+	// }
 
 	// 'exit' command quits the shell
 	if (strcmp(args[0], "exit") == 0) exit(0);
@@ -506,7 +500,7 @@ int commandHandler(char* args[]) {
 				char* directionO;
 				char* directionI;
 				int option;
-				int k = 0;
+				int k = i;
 				while (args[k] != NULL)
 				{
 					// printf("%s\n", args[k]);
@@ -526,7 +520,7 @@ int commandHandler(char* args[]) {
 					}
 					k++;
 				}
-				printf("%i\n", k);
+				// printf("%i\n", k);
 				// args_aux[k] = NULL;
 				// char* inputFile;
 				// char* outputFile;
@@ -543,11 +537,11 @@ int commandHandler(char* args[]) {
 				// 	outputFile = directionO;
 				// }
 				//printf("%s\n",directionO);
-				if (directionI != NULL)
-					printf("%s input 0\n", directionI);
-				if (directionO != NULL)
-					printf("%s output 0\n", directionO);
-				printf("hi\n");
+				// if (directionI != NULL)
+				// 	printf("%s input 0\n", directionI);
+				// if (directionO != NULL)
+				// 	printf("%s output 0\n", directionO);
+				// printf("hi\n");
 				fileIO(args_aux, directionI, directionO, option, background);
 				directionI = NULL;
 				directionO = NULL;
@@ -560,6 +554,14 @@ int commandHandler(char* args[]) {
 		// We launch the program with our method, indicating if we
 		// want background execution or not
 		args_aux[i] = NULL;
+		// printf("%i i\n", i);
+		// int k = 0;
+		// while (args_aux[k] != NULL)
+		// {
+		// 	printf("%s\n", args[k]);
+		// 	k++;
+		// }
+
 		launchProg(args_aux, background);
 
 		/**
@@ -627,9 +629,11 @@ int pipeHandler(char* args[]) {
 			newCommandLine[current] = args[current];
 		}
 
+		// printf("pipe %s\n", args[current]);
 		current++;
 	}
 	if (pipes == 1) {
+		// printf("entre pipe");
 		current++;
 		int current1 = 0;
 		char* newCommandLine1[LIMIT];
@@ -670,6 +674,15 @@ int pipeHandler(char* args[]) {
 	}
 	else
 	{
+		newCommandLine[current] = NULL;
+		// current = 0;
+		// while (newCommandLine[current] != NULL)
+		// {
+		// 	printf("newcomman %s\n", newCommandLine[current]);
+		// 	current++;
+		// }
+
+
 		//Llegados a este punto el comando actual no tiene caracteres especiales asi que lo ejecuto
 		return commandHandler(newCommandLine);
 	}
@@ -712,15 +725,16 @@ int main(int argc, char* argv[], char** envp) {
 
 		// We wait for user input
 		fgets(line, MAXLINE, stdin);
+		// printf("%s\n", line);
 
 		// If nothing is written, the loop is executed again
-		if ((prevTokens[0] = strtok(line, " \n\t")) == NULL) continue;
+		if ((prevTokens[0] = strtok(line, " \n")) == NULL) continue;
 
 		// We read all the tokens of the input and pass it to our
 		// commandHandler as the argument
 		numTokens = 1;
-		while ((prevTokens[numTokens] = strtok(NULL, " \n\t")) != NULL) numTokens++;
-
+		while ((prevTokens[numTokens] = strtok(NULL, " \n")) != NULL) numTokens++;
+		// printf("%i tokens\n", numTokens);
 		char* tokens[MAXLINE];
 		int lastToken = 0;
 		for (int i = 0; i < numTokens && strcmp(prevTokens[i], "#") != 0; i++)
@@ -729,6 +743,7 @@ int main(int argc, char* argv[], char** envp) {
 			lastToken++;
 			// printf("%s\n", tokens[i]);
 		}
+		// printf("%i lasttokens\n", lastToken);
 		tokens[lastToken] = NULL;
 
 		// Se manejan las condiciones
@@ -872,8 +887,15 @@ int main(int argc, char* argv[], char** envp) {
 				}
 			}
 		}
-		else
+		else {
+			// int k = 0;
+			// while (tokens[k] != NULL)
+			// {
+			// 	printf("token %s\n", tokens[k]);
+			// 	k++;
+			// }
 			pipeHandler(tokens);
+		}
 	}
 	exit(0);
 }
