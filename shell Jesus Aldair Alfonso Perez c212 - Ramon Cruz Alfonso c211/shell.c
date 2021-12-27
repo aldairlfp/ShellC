@@ -331,7 +331,7 @@ void launchProg(char** args, int background) {
 /**
 * Method used to manage I/O redirection
 */
-void fileIO(char* args[], char* inputFile, char* outputFile, int option, int background) {
+void fileIO(char* args[], char* inputFile, char* outputFile, int option) {
 	int err = -1;
 
 	int fileDescriptor; // between 0 and 19, describing the output or input file
@@ -343,17 +343,27 @@ void fileIO(char* args[], char* inputFile, char* outputFile, int option, int bac
 	if (pid == 0) {
 		// printf("option %i\n", option);
 		// Option 0: output redirection
-		if (option == 0) {
-			// We open (create) the file truncating it at 0, for write only
-			fileDescriptor = open(outputFile, O_CREAT | O_TRUNC | O_WRONLY, 0600);
+		if (outputFile != NULL) {
+			if (option == 0) {
+				// We open (create) the file truncating it at 0, for write only
+				fileDescriptor = open(outputFile, O_CREAT | O_TRUNC | O_WRONLY, 0600);
+			}
+			if (option == 1) {
+				// We open (create) the file truncating it at 0, for write only
+				fileDescriptor = open(outputFile, O_CREAT | O_APPEND | O_WRONLY, 0600);
+			}
 			// We replace de standard output with the appropriate file
 			dup2(fileDescriptor, STDOUT_FILENO);
 			close(fileDescriptor);
 			// Option 1: input and output redirection
 		}
-		else if (option == 2) {
+		if (inputFile != NULL) {
+			// printf("entre\n");
+			// inputFile = strcat(inputFile, "test");
+			// printf("%s\n", inputFile);
 			// We open file for read only (it's STDIN)
 			fileDescriptor = open(inputFile, O_RDONLY, 0600);
+			// printf("%i\n", fileDescriptor);
 			// We replace de standard input with the appropriate file
 			dup2(fileDescriptor, STDIN_FILENO);
 			close(fileDescriptor);
@@ -363,6 +373,7 @@ void fileIO(char* args[], char* inputFile, char* outputFile, int option, int bac
 			// close(fileDescriptor);		 
 		}
 
+		// printf("%s, %s\n", args[0], args[1]);
 		setenv("parent", getcwd(currentDirectory, 1024), 1);
 
 		if (execvp(args[0], args) == err) {
@@ -374,7 +385,8 @@ void fileIO(char* args[], char* inputFile, char* outputFile, int option, int bac
 }
 
 char* getDirection(char* args[], int* index) {
-	char* direction = (char*)malloc(sizeof(char));
+	// char* direction = (char*)malloc(sizeof(char));
+	char* direction;
 	int k = *index + 1;
 	while (args[k] != NULL)
 	{
@@ -542,7 +554,9 @@ int commandHandler(char* args[]) {
 				// if (directionO != NULL)
 				// 	printf("%s output 0\n", directionO);
 				// printf("hi\n");
-				fileIO(args_aux, directionI, directionO, option, background);
+				// printf("args aux %s, %s\n", args_aux[0], args_aux[1]);
+				args_aux[i] = NULL;
+				fileIO(args_aux, directionI, directionO, option);
 				directionI = NULL;
 				directionO = NULL;
 				free(directionI);
@@ -681,8 +695,6 @@ int pipeHandler(char* args[]) {
 		// 	printf("newcomman %s\n", newCommandLine[current]);
 		// 	current++;
 		// }
-
-
 		//Llegados a este punto el comando actual no tiene caracteres especiales asi que lo ejecuto
 		return commandHandler(newCommandLine);
 	}
