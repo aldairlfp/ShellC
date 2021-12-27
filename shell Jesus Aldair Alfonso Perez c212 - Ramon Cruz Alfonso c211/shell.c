@@ -355,7 +355,7 @@ void fileIO(char* args[], char* inputFile, char* outputFile, int option) {
 				// We open (create) the file truncating it at 0, for write only
 				fileDescriptor = open(outputFile, O_CREAT | O_APPEND | O_WRONLY, 0600);
 			}
-			printf("fd %i\n", fileDescriptor);
+			// printf("fd %i\n", fileDescriptor);
 			// We replace de standard output with the appropriate file
 			dup2(fileDescriptor, STDOUT_FILENO);
 			close(fileDescriptor);
