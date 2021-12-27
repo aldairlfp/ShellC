@@ -343,7 +343,10 @@ void fileIO(char* args[], char* inputFile, char* outputFile, int option) {
 	if (pid == 0) {
 		// printf("option %i\n", option);
 		// Option 0: output redirection
-		if (outputFile != NULL) {
+		if (strcmp(outputFile, "") != 0) {
+			// printf("entre\n");
+			// printf("output %s\n", outputFile);
+			// printf("option %i\n", option);
 			if (option == 0) {
 				// We open (create) the file truncating it at 0, for write only
 				fileDescriptor = open(outputFile, O_CREAT | O_TRUNC | O_WRONLY, 0600);
@@ -352,13 +355,16 @@ void fileIO(char* args[], char* inputFile, char* outputFile, int option) {
 				// We open (create) the file truncating it at 0, for write only
 				fileDescriptor = open(outputFile, O_CREAT | O_APPEND | O_WRONLY, 0600);
 			}
+			printf("fd %i\n", fileDescriptor);
 			// We replace de standard output with the appropriate file
 			dup2(fileDescriptor, STDOUT_FILENO);
 			close(fileDescriptor);
 			// Option 1: input and output redirection
 		}
-		if (inputFile != NULL) {
-			// printf("entre\n");
+		if (strcmp(inputFile, "") != 0) {
+			// printf("entre2\n");
+			// printf("input %sa\n", inputFile);
+			// printf("comman %s, %s, %s\n", args[0], args[1], args[2]);
 			// inputFile = strcat(inputFile, "test");
 			// printf("%s\n", inputFile);
 			// We open file for read only (it's STDIN)
@@ -384,26 +390,54 @@ void fileIO(char* args[], char* inputFile, char* outputFile, int option) {
 	waitpid(pid, NULL, 0);
 }
 
-char* getDirection(char* args[], int* index) {
-	// char* direction = (char*)malloc(sizeof(char));
-	char* direction;
-	int k = *index + 1;
-	while (args[k] != NULL)
-	{
-		if (strcmp(args[k], ">") != 0 || strcmp(args[k], "<") != 0 ||
-			strcmp(args[k], ">>") != 0) {
-			direction = strcat(direction, args[k]);
-			if (args[k + 1] != NULL && (strcmp(args[k], ">") != 0 && strcmp(args[k], "<") != 0 &&
-				strcmp(args[k], ">>") != 0)) {
-				direction = strcat(direction, " ");
-
-			}
+void getRedirection(char* commandList[], char** directionI, char** directionO, int index, int* option) {
+	char* newInput = (char*)malloc(sizeof(char));
+	char* newOutput = (char*)malloc(sizeof(char));
+	int currentI = 0;
+	int pos = index;
+	while (commandList[pos] != NULL) {
+		if (strcmp(commandList[pos], ">") == 0) {
+			newOutput = NULL;
+			free(newOutput);
+			newOutput = (char*)malloc(sizeof(char));
+			currentI = 1;
+			*option = 0;
 		}
-		k++;
+
+		else if (strcmp(commandList[pos], ">>") == 0) {
+			newOutput = NULL;
+			free(newOutput);
+			newOutput = (char*)malloc(sizeof(char));
+			currentI = 1;
+			*option = 1;
+		}
+
+		else if (strcmp(commandList[pos], "<") == 0) {
+			newInput = NULL;
+			free(newInput);
+			newInput = (char*)malloc(sizeof(char));
+			currentI = 0;
+		}
+
+		else if (currentI == 0) {
+			newInput = strcat(newInput, commandList[pos]);
+			if (commandList[pos + 1] != NULL)
+				newInput = strcat(newInput, " ");
+		}
+
+		else {
+			newOutput = strcat(newOutput, commandList[pos]);
+			if (commandList[pos + 1] != NULL)
+				newOutput = strcat(newOutput, " ");
+		}
+		pos++;
 	}
-	*index = k - 1;
-	// printf("Sali direction\n");
-	return direction;
+	// if (directionI != NULL)
+	// 	printf("input %s\n", newInput);
+	// if (directionO != NULL)
+	// 	printf("output %s\n", newOutput);
+	*directionI = newInput;
+	*directionO = newOutput;
 }
 
 /**
@@ -512,26 +546,31 @@ int commandHandler(char* args[]) {
 				char* directionO;
 				char* directionI;
 				int option;
-				int k = i;
-				while (args[k] != NULL)
-				{
-					// printf("%s\n", args[k]);
-					if (strcmp(args[k], "|") != 0) {
-						if (strcmp(args[k], "<") == 0) {
-							directionI = getDirection(args, &k);
-							option = 2;
-						}
-						if (strcmp(args[k], ">") == 0) {
-							directionO = getDirection(args, &k);
-							option = 0;
-						}
-						if (strcmp(args[k], ">>") == 0) {
-							directionO = getDirection(args, &k);
-							option = 1;
-						}
-					}
-					k++;
-				}
+				getRedirection(args, &directionI, &directionO, i, &option);
+				// if (directionI != NULL)
+				// 	printf("input %s\n", directionI);
+				// if (directionO != NULL)
+				// 	printf("output %s\n", directionO);
+
+				// while (args[k] != NULL)
+				// {
+				// 	// printf("%s\n", args[k]);
+				// 	if (strcmp(args[k], "|") != 0) {
+				// 		if (strcmp(args[k], "<") == 0) {
+				// 			directionI = getDirection(args, &k);
+				// 			option = 2;
+				// 		}
+				// 		if (strcmp(args[k], ">") == 0) {
+				// 			directionO = getDirection(args, &k);
+				// 			option = 0;
+				// 		}
+				// 		if (strcmp(args[k], ">>") == 0) {
+				// 			directionO = getDirection(args, &k);
+				// 			option = 1;
+				// 		}
+				// 	}
+				// 	k++;
+				// }
 				// printf("%i\n", k);
 				// args_aux[k] = NULL;
 				// char* inputFile;
