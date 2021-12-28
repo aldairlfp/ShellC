@@ -89,59 +89,17 @@ void Help(char* args[]) {
 	}
 }
 
-// void saveHistory(char * args){
-//     FILE * fichero = fopen(historyFileName, "a");
-//     if(!fichero){
-//         perror("fopen");
-//         exit(EXIT_FAILURE);
-//     }
-// 	char * stringToSave = strcat(buffer,historyCount);
-// 	strcat(stringToSave, " ");
-// 	strcat(stringToSave, args);
-//     fwrite(stringToSave,1,strlen(stringToSave), fichero);
-// 	fwrite("\n", 1, strlen("\n"), fichero);
-//     fclose(fichero);
-// 	exit(EXIT_SUCCESS);
-// }
+char* saveHistory(){
+	
+}
 
-// void LoadFromHistory(){
-// 	FILE* inputFile = fopen(historyFileName, "rb+");
-//     if(!inputFile) exit(EXIT_FAILURE);
-// 	struct stat sb;
-// 	if(stat(historyFileName, &sb) == -1){
-// 		perror("stat");
-// 		exit(EXIT_FAILURE);
-// 	}
-// 	char * loadHistory = malloc(sb.st_size);
-// 	fread(loadHistory, sb.st_size, 1, inputFile);
-// 	printf("%s\n", loadHistory);
-// 	actualHistory = strcat(buffer,loadHistory);
-// 	fclose(inputFile);
-// 	free(loadHistory);
-// 	exit(EXIT_SUCCESS);
-// }
+char* loadHistory(){
+	
+}
 
-// void Again(int number){
-// 	int i = 0;
-// 	int j = 0;
-// 	int count = 1;
-// 	char * againCommand;
-// 	while (i < strlen(actualHistory))
-// 	{
-// 		if(actualHistory[i] == "\n"){
-// 			if(number == count){
-// 				launchProg(againCommand, );
-// 				break;
-// 			}
-// 			j = 0;
-// 			againCommand = "";
-// 			count++;
-// 		}
-// 		againCommand[j] = actualHistory[i];
-// 		i++;
-// 		j++;
-// 	}
-// }
+char* again(int line){
+
+}
 
 /**
  * SIGNAL HANDLERS
@@ -327,13 +285,15 @@ void getRedirection(char* commandList[], char** directionI, char** directionO, i
 
 		else if (currentI == 0) {
 			newInput = strcat(newInput, commandList[pos]);
-			if (commandList[pos + 1] != NULL)
+			if (commandList[pos + 1] != NULL && strcmp(commandList[pos], "<") != 0 &&
+				strcmp(commandList[pos], ">") == 0 && strcmp(commandList[pos], ">>") == 0)
 				newInput = strcat(newInput, " ");
 		}
 
 		else {
 			newOutput = strcat(newOutput, commandList[pos]);
-			if (commandList[pos + 1] != NULL)
+			if (commandList[pos + 1] != NULL && strcmp(commandList[pos], "<") != 0 &&
+				strcmp(commandList[pos], ">") == 0 && strcmp(commandList[pos], ">>") == 0)
 				newOutput = strcat(newOutput, " ");
 		}
 		pos++;
