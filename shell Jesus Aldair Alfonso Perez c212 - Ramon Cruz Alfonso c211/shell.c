@@ -90,15 +90,54 @@ void Help(char* args[]) {
 }
 
 void saveHistory(char* line) {
-
+	FILE * fichero = fopen(historyFileName, "a");
+    if(!fichero){
+        perror("fopen");
+        exit(EXIT_FAILURE);
+    }
+	char * stringToSave = strcat(buffer,historyCount);
+	strcat(stringToSave, " ");
+	strcat(stringToSave, line);
+    fwrite(stringToSave,1,strlen(stringToSave), fichero);
+	fwrite("\n", 1, strlen("\n"), fichero);
+    fclose(fichero);
+	exit(EXIT_SUCCESS);
 }
 
 char* loadHistory() {
-
+	FILE* inputFile = fopen(historyFileName, "rb+");
+    if(!inputFile) exit(EXIT_FAILURE);
+	struct stat sb;
+	if(stat(historyFileName, &sb) == -1){
+		perror("stat");
+		exit(EXIT_FAILURE);
+	}
+	char * loadHistory = malloc(sb.st_size);
+	fread(loadHistory, sb.st_size, 1, inputFile);
+	//printf("%s\n", loadHistory);
+	actualHistory = strcat(buffer,loadHistory);
+	fclose(inputFile);
+	free(loadHistory);
+	return actualHistory;
 }
 
 char* again(int line) {
-
+	int i = 0;
+	int j = 0;
+	int count = 1;
+	char * againCommand;
+	while (i < strlen(actualHistory))
+	{
+		if(actualHistory[i] == "\n"){
+			if(line == count) return againCommand;
+			j = 0;
+			againCommand = "";
+			count++;
+		}
+		againCommand[j] = actualHistory[i];
+		i++;
+		j++;
+	}
 }
 
 /**
