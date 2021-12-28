@@ -89,15 +89,15 @@ void Help(char* args[]) {
 	}
 }
 
-char* saveHistory(){
-	
+void saveHistory(char* line) {
+
 }
 
-char* loadHistory(){
-	
+char* loadHistory() {
+
 }
 
-char* again(int line){
+char* again(int line) {
 
 }
 
@@ -357,11 +357,11 @@ int commandHandler(char* args[]) {
 		Help(args);
 		return 0;
 	}
-	// else if (strcmp(args[0], "again") == 0) {
-	// 	if(args[1] != NULL){
-	// 		Again((int) strtol(args[1], NULL, 10);)
-	// 	}
-	// }
+	// history
+	else if (strcmp(args[0], "history") == 0) {
+		printf("%s\n", loadHistory());
+		return 0;
+	}
 	// 'cd' command to change directory
 	else if (strcmp(args[0], "cd") == 0) changeDirectory(args);
 	else {
@@ -532,6 +532,10 @@ int main(int argc, char* argv[], char** envp) {
 		fgets(line, MAXLINE, stdin);
 		// printf("%s\n", line);
 
+		// Save the line in history
+		if (strcmp(line[0], " ") != 0)
+			saveHistory(line);
+
 		// If nothing is written, the loop is executed again
 		if ((prevTokens[0] = strtok(line, " \n")) == NULL) continue;
 
@@ -550,6 +554,30 @@ int main(int argc, char* argv[], char** envp) {
 			lastToken++;
 		}
 		tokens[lastToken] = NULL;
+
+		if (tokens[0] != NULL) {
+			if (tokens[1] != NULL && tokens[2] == NULL) {
+				// line = again((int)tokens[1]);
+				// If nothing is written, the loop is executed again
+				if ((prevTokens[0] = strtok(line, " \n")) == NULL) continue;
+
+				// We read all the tokens of the input and pass it to our
+				// commandHandler as the argument
+				numTokens = 1;
+				while ((prevTokens[numTokens] = strtok(NULL, " \n")) != NULL) numTokens++;
+				// printf("%i tokens\n", numTokens);
+				char* tokens[MAXLINE];
+
+				// Verificar si existe # para ignorar el resto del comando
+				int lastToken = 0;
+				for (int i = 0; i < numTokens && strcmp(prevTokens[i], "#") != 0; i++)
+				{
+					tokens[i] = prevTokens[i];
+					lastToken++;
+				}
+				tokens[lastToken] = NULL;
+			}
+		}
 
 		// Se manejan las condiciones
 		if (strcmp(tokens[0], "if") == 0)
